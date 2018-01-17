@@ -133,6 +133,24 @@ if hasattr(inspect, 'Signature'):  # inspect.Signature() is new in 3.3
 
 
 ########################################################################
+# Pandas DataFrame Reader.
+########################################################################
+def from_pandas(df, index=True):
+    """Takes a pandas DataFrame and returns a generator that operates
+    like a csv.DictReader---it yields rows as OrderedDict objects whose
+    keys are derived from the DataFrame's index and column names.
+    """
+    if index:
+        fieldnames = list(df.index.names) + list(df.columns)
+    else:
+        fieldnames = list(df.columns)
+
+    records = df.to_records(index=index)
+    for record in records:
+        yield OrderedDict(zip(fieldnames, record))
+
+
+########################################################################
 # MS Excel Reader.
 ########################################################################
 def from_excel(path, worksheet=0):
@@ -142,8 +160,7 @@ def from_excel(path, worksheet=0):
 
     The given *path* must specify an XLSX or XLS file and *worksheet*
     must specify the index or name of the worksheet to load (defaults
-    to the first worksheet). This constructor requires the optional,
-    third-party library `xlrd <https://pypi.python.org/pypi/xlrd>`_.
+    to the first worksheet).
 
     Load first worksheet::
 
@@ -153,6 +170,10 @@ def from_excel(path, worksheet=0):
     index (an integer)::
 
         source = from_excel('somefile.xlsx', 'Sheet 2')
+
+    .. note::
+        This function requires the optional, third-party
+        package `xlrd <https://pypi.python.org/pypi/xlrd>`_.
     """
     try:
         import xlrd

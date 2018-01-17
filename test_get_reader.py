@@ -7,11 +7,17 @@ import sys
 import unittest
 
 try:
+    import pandas
+except ImportError:
+    pandas = None
+
+try:
     import xlrd
 except ImportError:
     xlrd = None
 
 from get_reader import from_csv
+from get_reader import from_pandas
 from get_reader import from_excel
 
 
@@ -108,21 +114,83 @@ class TestFromCsv(unittest.TestCase):
             ]
             self.assertEqual(list(reader), expected)
         else:
-            # Using old assertRaises syntax for Python 2.6 support.
-            def fn():
+            with self.assertRaises(TypeError):
                 reader = from_csv(iterable, encoding='ascii')
-            self.assertRaises(TypeError, fn)
 
 
+@unittest.skipIf(not pandas, 'pandas not found')
+class TestFromPandas(unittest.TestCase):
+    def setUp(self):
+        self.df = pandas.DataFrame({
+            'col1': (1, 2, 3),
+            'col2': ('a', 'b', 'c'),
+        })
+
+    def test_automatic_indexing(self):
+        reader = from_pandas(self.df)  # <- Includes index by default.
+        expected = [
+            {None: 0, 'col1': 1, 'col2': 'a'},
+            {None: 1, 'col1': 2, 'col2': 'b'},
+            {None: 2, 'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = from_pandas(self.df, index=False)  # <- Omits index.
+        expected = [
+            {'col1': 1, 'col2': 'a'},
+            {'col1': 2, 'col2': 'b'},
+            {'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_simple_index(self):
+        self.df.index = pandas.Index(['x', 'y', 'z'], name='col0')
+
+        reader = from_pandas(self.df)
+        expected = [
+            {'col0': 'x', 'col1': 1, 'col2': 'a'},
+            {'col0': 'y', 'col1': 2, 'col2': 'b'},
+            {'col0': 'z', 'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = from_pandas(self.df, index=False)
+        expected = [
+            {'col1': 1, 'col2': 'a'},
+            {'col1': 2, 'col2': 'b'},
+            {'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_multiindex(self):
+        index_values = [('x', 'one'), ('x', 'two'), ('y', 'three')]
+        index = pandas.MultiIndex.from_tuples(index_values, names=['A', 'B'])
+        self.df.index = index
+
+        reader = from_pandas(self.df)
+        expected = [
+            {'A': 'x', 'B': 'one',   'col1': 1, 'col2': 'a'},
+            {'A': 'x', 'B': 'two',   'col1': 2, 'col2': 'b'},
+            {'A': 'y', 'B': 'three', 'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = from_pandas(self.df, index=False)
+        expected = [
+            {'col1': 1, 'col2': 'a'},
+            {'col1': 2, 'col2': 'b'},
+            {'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+
+@unittest.skipIf(not xlrd, 'xlrd not found')
 class TestFromExcel(unittest.TestCase):
     def setUp(self):
         dirname = os.path.dirname(__file__)
         self.filepath = os.path.join(dirname, 'sample_file.xlsx')
 
     def test_default_worksheet(self):
-        if not xlrd:
-            return
-
         reader = from_excel(self.filepath)  # <- Defaults to 1st worksheet.
 
         expected = [
@@ -133,9 +201,6 @@ class TestFromExcel(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     def test_specified_worksheet(self):
-        if not xlrd:
-            return
-
         reader = from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
 
         expected = [

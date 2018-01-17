@@ -4,8 +4,12 @@ import inspect
 import io
 import sys
 from collections import Iterable
+from collections import OrderedDict
 
 
+########################################################################
+# CSV Reader.
+########################################################################
 if sys.version_info[0] >= 3:
     def _from_csv(csvfile, fieldnames, encoding, **kwds):
         if isinstance(csvfile, str):
@@ -126,3 +130,50 @@ if hasattr(inspect, 'Signature'):  # inspect.Signature() is new in 3.3
         inspect.Parameter('encoding', inspect.Parameter.KEYWORD_ONLY, default='UTF-8'),
         inspect.Parameter('kwds', inspect.Parameter.VAR_KEYWORD),
     ])
+
+
+########################################################################
+# MS Excel Reader.
+########################################################################
+def from_excel(path, worksheet=0):
+    """Returns a generator that operates like a csv.DictReader---it
+    yields rows as OrderedDict objects whose keys are derived from
+    values in the first row of the specified *worksheet*.
+
+    The given *path* must specify an XLSX or XLS file and *worksheet*
+    must specify the index or name of the worksheet to load (defaults
+    to the first worksheet). This constructor requires the optional,
+    third-party library `xlrd <https://pypi.python.org/pypi/xlrd>`_.
+
+    Load first worksheet::
+
+        source = from_excel('somefile.xlsx')
+
+    Specific worksheets can be loaded by name (a string) or
+    index (an integer)::
+
+        source = from_excel('somefile.xlsx', 'Sheet 2')
+    """
+    try:
+        import xlrd
+    except ImportError:
+        raise ImportError(
+            "No module named 'xlrd'\n"
+            "\n"
+            "This is an optional constructor that requires the "
+            "third-party library 'xlrd'."
+        )
+
+    book = xlrd.open_workbook(path, on_demand=True)
+    try:
+        if isinstance(worksheet, int):
+            sheet = book.sheet_by_index(worksheet)
+        else:
+            sheet = book.sheet_by_name(worksheet)
+        data = (sheet.row(i) for i in range(sheet.nrows))
+        data = ([x.value for x in row] for row in data)
+        fieldnames = next(data)
+        for row in data:
+            yield OrderedDict(zip(fieldnames, row))
+    finally:
+        book.release_resources()

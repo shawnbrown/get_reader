@@ -6,7 +6,13 @@ import os
 import sys
 import unittest
 
+try:
+    import xlrd
+except ImportError:
+    xlrd = None
+
 from get_reader import from_csv
+from get_reader import from_excel
 
 
 PY3 = sys.version_info[0] == 3
@@ -106,6 +112,38 @@ class TestFromCsv(unittest.TestCase):
             def fn():
                 reader = from_csv(iterable, encoding='ascii')
             self.assertRaises(TypeError, fn)
+
+
+class TestFromExcel(unittest.TestCase):
+    def setUp(self):
+        dirname = os.path.dirname(__file__)
+        self.filepath = os.path.join(dirname, 'sample_file.xlsx')
+
+    def test_default_worksheet(self):
+        if not xlrd:
+            return
+
+        reader = from_excel(self.filepath)  # <- Defaults to 1st worksheet.
+
+        expected = [
+            {'col1': 1, 'col2': 'a'},
+            {'col1': 2, 'col2': 'b'},
+            {'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_specified_worksheet(self):
+        if not xlrd:
+            return
+
+        reader = from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
+
+        expected = [
+            {'col1': 4, 'col2': 'd'},
+            {'col1': 5, 'col2': 'e'},
+            {'col1': 6, 'col2': 'f'},
+        ]
+        self.assertEqual(list(reader), expected)
 
 
 if __name__ == '__main__':

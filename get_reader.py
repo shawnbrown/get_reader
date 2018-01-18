@@ -78,7 +78,7 @@ else:
 
     def _from_csv(csvfile, fieldnames, encoding, **kwds):
         if isinstance(csvfile, basestring):
-            csvfile = open(csvfile, 'rb')
+            csvfile = io.open(csvfile, 'rb')
         elif hasattr(csvfile, 'mode'):
             if 'b' not in csvfile.mode:
                 raise TypeError('Python 2 compatibility expects binary-'

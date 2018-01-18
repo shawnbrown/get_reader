@@ -23,9 +23,9 @@ from get_reader import get_reader
 from get_reader import IterDictReader
 
 
-PY3 = sys.version_info[0] == 3
+PY2 = sys.version_info[0] == 2
 
-if not PY3:
+if PY2:
     chr = unichr
 
 
@@ -37,7 +37,7 @@ def emulate_fh(string, encoding=None):
     emulates the appropriate mode using the file-like stream objects.
     """
     fh = io.BytesIO(string)
-    if not PY3:
+    if PY2:
         return fh
     return io.TextIOWrapper(fh, encoding=encoding)
 
@@ -105,7 +105,10 @@ class TestFromCsv(unittest.TestCase):
             '3,c',
         ])
 
-        if PY3:
+        if PY2:
+            with self.assertRaises(TypeError):
+                reader = from_csv(iterable, encoding='ascii')
+        else:
             reader = from_csv(iterable, encoding='ascii')
             self.assertTrue(isinstance(reader, csv.DictReader))
 
@@ -115,9 +118,6 @@ class TestFromCsv(unittest.TestCase):
                 {'col1': '3', 'col2': 'c'},
             ]
             self.assertEqual(list(reader), expected)
-        else:
-            with self.assertRaises(TypeError):
-                reader = from_csv(iterable, encoding='ascii')
 
 
 @unittest.skipIf(not pandas, 'pandas not found')

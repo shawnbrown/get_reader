@@ -13,18 +13,71 @@ except NameError:
     string_types = str
 
 
+class IterDictReader(object):
+    def __init__(self, iterable, fieldnames=None, cleanup=None, restkey=None,
+                 restval=None):
+        self._cleanup = cleanup
+        self._cleanup_has_run = False
+        self.iterator = iter(iterable)
+        if not fieldnames:
+            try:
+                fieldnames = next(self.iterator)
+            except StopIteration as err:
+                self.cleanup()
+                raise err
+        self.fieldnames = fieldnames
+        self.restkey = restkey
+        self.restval = restval
+
+    def cleanup(self):
+        if self._cleanup and not self._cleanup_has_run:
+            self._cleanup()
+            self._cleanup_has_run = True  # <- Should only execute one time.
+
+    def __del__(self):
+        self.cleanup()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            row = next(self.iterator)      # Unlike the basic reader, we prefer
+            while row == []:               # not to return blanks, because we
+                row = next(self.iterator)  # will typically wind up with a dict
+        except StopIteration as err:     # full of None values.
+            self.cleanup()
+            raise err
+
+        d = OrderedDict(zip(self.fieldnames, row))  # This code is adapted
+        lf = len(self.fieldnames)                   # from the csv.DictReader
+        lr = len(row)                               # class in the Python
+        if lf < lr:                                 # Standard Library.
+            d[self.restkey] = row[lf:]
+        elif lf > lr:
+            for key in self.fieldnames[lr:]:
+                d[key] = self.restval
+        return d
+
+    def next(self):  # Included for Python 2 support.
+        return self.__next__()
+
+
 ########################################################################
 # CSV Reader.
 ########################################################################
 if sys.version_info[0] >= 3:
     def _from_csv(csvfile, fieldnames, encoding, **kwds):
         if isinstance(csvfile, str):
+            restkey = kwds.pop('restkey', None)
+            restval = kwds.pop('restval', None)
+
             csvfile = open(csvfile, 'rt', encoding=encoding, newline='')
-        elif hasattr(csvfile, 'mode'):
-            if 't' not in csvfile.mode:
-                raise TypeError('expected text-mode file, '
-                                'got {0!r}'.format(csvfile.mode))
-        elif isinstance(csvfile, io.IOBase):
+            reader = csv.reader(csvfile, **kwds)
+            return IterDictReader(reader, fieldnames, cleanup=csvfile.close,
+                                  restkey=restkey, restval=restval)  # <- EXIT!
+
+        if isinstance(csvfile, io.IOBase):
             if not isinstance(csvfile, io.TextIOBase):
                 cls_name = csvfile.__class__.__name__
                 raise TypeError('stream object must inherit from '
@@ -100,23 +153,12 @@ else:
             cls_name = csvfile.__class__.__name__
             raise TypeError('unsupported type {0}'.format(cls_name))
 
-        dictreader_kwds = {}
-        dictreader_kwds['restkey'] = kwds.pop('restkey', None)
-        dictreader_kwds['restval'] = kwds.pop('restval', None)
-        dictreader_kwds['dialect'] = kwds.pop('dialect', 'excel')
+        restkey = kwds.pop('restkey', None)
+        restval = kwds.pop('restval', None)
 
         unicode_reader = UnicodeReader(csvfile, encoding=encoding, **kwds)
-
-        if not fieldnames:
-            fieldnames = next(unicode_reader)
-
-        reader = csv.DictReader(io.StringIO(None),  # Initialize DictReader
-                                fieldnames,         # with empty file object.
-                                **dictreader_kwds)
-
-        reader.reader = unicode_reader  # Swap-in unicode reader.
-
-        return reader
+        return IterDictReader(unicode_reader, fieldnames, cleanup=csvfile.close,
+                              restkey=restkey, restval=restval)
 
 
 def from_csv(file, **kwds):

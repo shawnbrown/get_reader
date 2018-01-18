@@ -20,6 +20,7 @@ from get_reader import from_csv
 from get_reader import from_pandas
 from get_reader import from_excel
 from get_reader import get_reader
+from get_reader import IterDictReader
 
 
 PY3 = sys.version_info[0] == 3
@@ -51,7 +52,7 @@ class TestFromCsv(unittest.TestCase):
         ), encoding='ascii')
 
         reader = from_csv(fh, encoding='ascii')
-        self.assertTrue(isinstance(reader, csv.DictReader))
+        self.assertTrue(isinstance(reader, (csv.DictReader, IterDictReader)))
 
         expected = [
             {'col1': '1', 'col2': 'a'},
@@ -69,7 +70,7 @@ class TestFromCsv(unittest.TestCase):
         ), encoding='iso8859-1')
 
         reader = from_csv(fh, encoding='iso8859-1')
-        self.assertTrue(isinstance(reader, csv.DictReader))
+        self.assertTrue(isinstance(reader, (csv.DictReader, IterDictReader)))
 
         expected = [
             {'col1': '1', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
@@ -87,7 +88,7 @@ class TestFromCsv(unittest.TestCase):
         ), encoding='utf-8')
 
         reader = from_csv(fh, encoding='utf-8')
-        self.assertTrue(isinstance(reader, csv.DictReader))
+        self.assertTrue(isinstance(reader, (csv.DictReader, IterDictReader)))
 
         expected = [
             {'col1': '1', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α

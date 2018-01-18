@@ -19,6 +19,7 @@ except ImportError:
 from get_reader import from_csv
 from get_reader import from_pandas
 from get_reader import from_excel
+from get_reader import get_reader
 
 
 PY3 = sys.version_info[0] == 3
@@ -89,8 +90,8 @@ class TestFromCsv(unittest.TestCase):
         self.assertTrue(isinstance(reader, csv.DictReader))
 
         expected = [
-            {'col1': '1', 'col2': chr(0x003b1)},  # chr(0x03b1)  -> α
-            {'col1': '2', 'col2': chr(0x00950)},  # chr(0x0950)  -> ॐ
+            {'col1': '1', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α
+            {'col1': '2', 'col2': chr(0x00950)},  # chr(0x00950) -> ॐ
             {'col1': '3', 'col2': chr(0x1d538)},  # chr(0x1d538) -> 𝔸
         ]
         self.assertEqual(list(reader), expected)
@@ -207,6 +208,57 @@ class TestFromExcel(unittest.TestCase):
             {'col1': 4, 'col2': 'd'},
             {'col1': 5, 'col2': 'e'},
             {'col1': 6, 'col2': 'f'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+
+class TestFunctionDispatching(unittest.TestCase):
+    def setUp(self):
+        self._orig_dir = os.getcwd()
+        os.chdir(os.path.dirname(__file__) or '.')
+
+        def restore_dir():
+            os.chdir(self._orig_dir)
+        self.addCleanup(restore_dir)
+
+    def test_csv(self):
+        reader = get_reader('sample_text_utf8.csv', encoding='utf-8')
+        expected = [
+            {'col1': 'utf8', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = get_reader('sample_text_iso88591.csv', encoding='iso8859-1')
+        expected = [
+            {'col1': 'iso88591', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skipIf(not xlrd, 'xlrd not found')
+    def test_excel(self):
+        reader = get_reader('sample_excel2007.xlsx')
+        expected = [
+            {'col1': 'excel2007', 'col2': 1},
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = get_reader('sample_excel1997.xls')
+        expected = [
+            {'col1': 'excel1997', 'col2': 1},
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skipIf(not pandas, 'pandas not found')
+    def test_pandas(self):
+        df = pandas.DataFrame({
+            'col1': (1, 2, 3),
+            'col2': ('a', 'b', 'c'),
+        })
+        reader = get_reader(df, index=False)
+        expected = [
+            {'col1': 1, 'col2': 'a'},
+            {'col1': 2, 'col2': 'b'},
+            {'col1': 3, 'col2': 'c'},
         ]
         self.assertEqual(list(reader), expected)
 

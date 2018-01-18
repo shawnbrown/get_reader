@@ -7,6 +7,12 @@ from collections import Iterable
 from collections import OrderedDict
 
 
+try:
+    string_types = basestring
+except NameError:
+    string_types = str
+
+
 ########################################################################
 # CSV Reader.
 ########################################################################
@@ -198,3 +204,26 @@ def from_excel(path, worksheet=0):
             yield OrderedDict(zip(fieldnames, row))
     finally:
         book.release_resources()
+
+
+########################################################################
+# Function Dispatching.
+########################################################################
+def get_reader(obj, *args, **kwds):
+    """Returns a csv.DictReader or a DictReader-like iterator."""
+    if isinstance(obj, string_types):
+        if obj.endswith('.csv'):
+            return from_csv(obj, *args, **kwds)
+        if obj.endswith('.xlsx') or obj.endswith('.xls'):
+            return from_excel(obj, *args, **kwds)
+        raise TypeError('file {0!r} has no recognized extension'.format(obj))
+
+    if isinstance(obj, io.IOBase) \
+            and getattr(obj, 'name', '').endswith('.csv'):
+        return from_csv(obj, *args, **kwds)
+
+    if 'pandas' in sys.modules:
+        if isinstance(obj, sys.modules['pandas'].DataFrame):
+            return from_pandas(obj, *args, **kwds)
+
+    raise TypeError('unsupported type {0}'.format(obj.__class__.__name__))

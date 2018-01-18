@@ -188,7 +188,7 @@ class TestFromPandas(unittest.TestCase):
 class TestFromExcel(unittest.TestCase):
     def setUp(self):
         dirname = os.path.dirname(__file__)
-        self.filepath = os.path.join(dirname, 'sample_file.xlsx')
+        self.filepath = os.path.join(dirname, 'sample_multiworksheet.xlsx')
 
     def test_default_worksheet(self):
         reader = from_excel(self.filepath)  # <- Defaults to 1st worksheet.

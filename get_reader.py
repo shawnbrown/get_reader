@@ -8,59 +8,47 @@ from collections import OrderedDict
 
 
 try:
+    callable  # Removed from 3.0 and 3.1, added back in 3.2.
+except NameError:
+    def callable(obj):
+        parent_types = type(obj).__mro__
+        return any('__call__' in typ.__dict__ for typ in parent_types)
+
+try:
     string_types = basestring
 except NameError:
     string_types = str
 
 
-class IterDictReader(object):
-    def __init__(self, iterable, fieldnames=None, cleanup=None, restkey=None,
-                 restval=None):
-        self._cleanup = cleanup
-        self._cleanup_has_run = False
-        self.iterator = iter(iterable)
+def _dictgen_with_cleanup(iterable, fieldnames, cleanup,
+                          restkey=None, restval=None):
+    """A DictReader-like generator function that calls the given
+    *cleanup* function when finished.
+    """
+    assert callable(cleanup), 'cleanup must be a callable object'
+    try:
+        iterator = iter(iterable)
+
         if not fieldnames:
             try:
-                fieldnames = next(self.iterator)
-            except StopIteration as err:
-                self.cleanup()
-                raise err
-        self.fieldnames = fieldnames
-        self.restkey = restkey
-        self.restval = restval
+                fieldnames = next(iterator)
+            except StopIteration:
+                pass  # Continue with empty iterator.
 
-    def cleanup(self):
-        if self._cleanup and not self._cleanup_has_run:
-            self._cleanup()
-            self._cleanup_has_run = True  # <- Should only execute one time.
-
-    def __del__(self):
-        self.cleanup()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        try:
-            row = next(self.iterator)      # Unlike the basic reader, we prefer
-            while row == []:               # not to return blanks, because we
-                row = next(self.iterator)  # will typically wind up with a dict
-        except StopIteration as err:     # full of None values.
-            self.cleanup()
-            raise err
-
-        d = OrderedDict(zip(self.fieldnames, row))  # This code is adapted
-        lf = len(self.fieldnames)                   # from the csv.DictReader
-        lr = len(row)                               # class in the Python
-        if lf < lr:                                 # Standard Library.
-            d[self.restkey] = row[lf:]
-        elif lf > lr:
-            for key in self.fieldnames[lr:]:
-                d[key] = self.restval
-        return d
-
-    def next(self):  # Included for Python 2 support.
-        return self.__next__()
+        for row in iterator:
+            if row == []:                          # This code is
+                continue                           # adapted from the
+            d = OrderedDict(zip(fieldnames, row))  # csv.DictReader
+            lf = len(fieldnames)                   # class in the
+            lr = len(row)                          # Python 3.6
+            if lf < lr:                            # Standard Library.
+                d[self.restkey] = row[lf:]
+            elif lf > lr:
+                for key in fieldnames[lr:]:
+                    d[key] = restval
+            yield d
+    finally:
+        cleanup()
 
 
 ########################################################################
@@ -74,10 +62,17 @@ if sys.version_info[0] >= 3:
 
             csvfile = open(csvfile, 'rt', encoding=encoding, newline='')
             reader = csv.reader(csvfile, **kwds)
-            return IterDictReader(reader, fieldnames, cleanup=csvfile.close,
-                                  restkey=restkey, restval=restval)  # <- EXIT!
+            return _dictgen_with_cleanup(reader,
+                                         fieldnames=fieldnames,
+                                         cleanup=csvfile.close,
+                                         restkey=restkey,
+                                         restval=restval)  # <- EXIT!
 
-        if isinstance(csvfile, io.IOBase):
+        if hasattr(csvfile, 'mode'):
+            if 't' not in csvfile.mode:
+                raise TypeError('expects a text-mode file, '
+                                'got {0!r}'.format(csvfile.mode))
+        elif isinstance(csvfile, io.IOBase):
             if not isinstance(csvfile, io.TextIOBase):
                 cls_name = csvfile.__class__.__name__
                 raise TypeError('stream object must inherit from '
@@ -136,9 +131,20 @@ else:
 
 
     def _from_csv(csvfile, fieldnames, encoding, **kwds):
+        restkey = kwds.pop('restkey', None)
+        restval = kwds.pop('restval', None)
+
         if isinstance(csvfile, basestring):
             csvfile = io.open(csvfile, 'rb')
-        elif hasattr(csvfile, 'mode'):
+            unicode_reader = UnicodeReader(csvfile, encoding=encoding, **kwds)
+
+            return _dictgen_with_cleanup(unicode_reader,
+                                         fieldnames=fieldnames,
+                                         cleanup=csvfile.close,
+                                         restkey=restkey,
+                                         restval=restval)  # <- EXIT!
+
+        if hasattr(csvfile, 'mode'):
             if 'b' not in csvfile.mode:
                 raise TypeError('Python 2 compatibility expects binary-'
                                 'mode file, got {0!r}'.format(csvfile.mode))
@@ -153,18 +159,28 @@ else:
             cls_name = csvfile.__class__.__name__
             raise TypeError('unsupported type {0}'.format(cls_name))
 
-        restkey = kwds.pop('restkey', None)
-        restval = kwds.pop('restval', None)
-
         unicode_reader = UnicodeReader(csvfile, encoding=encoding, **kwds)
-        return IterDictReader(unicode_reader, fieldnames, cleanup=csvfile.close,
-                              restkey=restkey, restval=restval)
+
+        if not fieldnames:
+            try:
+                fieldnames = next(unicode_reader)
+            except StopIteration:
+                pass  # Continue with empty iterator.
+
+        reader = csv.DictReader(io.StringIO(None),  # Initialize DictReader
+                                fieldnames,         # with empty file object.
+                                restkey=restkey,
+                                restval=restval)
+
+        reader.reader = unicode_reader  # Swap-in unicode reader.
+
+        return reader
 
 
 def from_csv(file, **kwds):
-    """Return a csv.DictReader object which will iterate over lines in
-    the given *file*. The *file* can be a file path, file-like object,
-    or other object supported by the csv module.
+    """Return a csv.DictReader or DictReader-like iterator which will
+    iterate over lines in the given *file*. The *file* can be a file
+    path (a string) or any object supported by the csv.reader function.
     """
     fieldnames = kwds.pop('fieldnames', None)  # Emulate keyword-only args to
     encoding = kwds.pop('encoding', 'utf-8')   # support Python 2.7 and 2.6.
@@ -234,18 +250,20 @@ def from_excel(path, worksheet=0):
         )
 
     book = xlrd.open_workbook(path, on_demand=True)
-    try:
-        if isinstance(worksheet, int):
-            sheet = book.sheet_by_index(worksheet)
-        else:
-            sheet = book.sheet_by_name(worksheet)
-        data = (sheet.row(i) for i in range(sheet.nrows))
-        data = ([x.value for x in row] for row in data)
-        fieldnames = next(data)
-        for row in data:
-            yield OrderedDict(zip(fieldnames, row))
-    finally:
-        book.release_resources()
+
+    if isinstance(worksheet, int):
+        sheet = book.sheet_by_index(worksheet)
+    else:
+        sheet = book.sheet_by_name(worksheet)
+
+    data = (sheet.row(i) for i in range(sheet.nrows))
+    data = ([x.value for x in row] for row in data)
+
+    return _dictgen_with_cleanup(data,
+                                 fieldnames=None,
+                                 cleanup=book.release_resources,
+                                 restkey=None,
+                                 restval=None)
 
 
 ########################################################################

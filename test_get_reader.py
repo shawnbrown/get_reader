@@ -20,7 +20,7 @@ from get_reader import from_csv
 from get_reader import from_pandas
 from get_reader import from_excel
 from get_reader import get_reader
-from get_reader import IterDictReader
+from get_reader import _dictgen_with_cleanup
 
 
 PY2 = sys.version_info[0] == 2
@@ -42,6 +42,17 @@ def emulate_fh(string, encoding=None):
     return io.TextIOWrapper(fh, encoding=encoding)
 
 
+class TestDictgenWithCleanup(unittest.TestCase):
+    def test_stopiteration(self):
+        pass
+
+    def test_exception(self):
+        pass
+
+    def test_del(self):
+        pass
+
+
 class TestFromCsv(unittest.TestCase):
     def test_file_ascii(self):
         fh = emulate_fh((
@@ -52,8 +63,6 @@ class TestFromCsv(unittest.TestCase):
         ), encoding='ascii')
 
         reader = from_csv(fh, encoding='ascii')
-        self.assertTrue(isinstance(reader, (csv.DictReader, IterDictReader)))
-
         expected = [
             {'col1': '1', 'col2': 'a'},
             {'col1': '2', 'col2': 'b'},
@@ -70,8 +79,6 @@ class TestFromCsv(unittest.TestCase):
         ), encoding='iso8859-1')
 
         reader = from_csv(fh, encoding='iso8859-1')
-        self.assertTrue(isinstance(reader, (csv.DictReader, IterDictReader)))
-
         expected = [
             {'col1': '1', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
             {'col1': '2', 'col2': chr(0xf0)},  # chr(0xf0) -> ð
@@ -88,8 +95,6 @@ class TestFromCsv(unittest.TestCase):
         ), encoding='utf-8')
 
         reader = from_csv(fh, encoding='utf-8')
-        self.assertTrue(isinstance(reader, (csv.DictReader, IterDictReader)))
-
         expected = [
             {'col1': '1', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α
             {'col1': '2', 'col2': chr(0x00950)},  # chr(0x00950) -> ॐ
@@ -110,14 +115,20 @@ class TestFromCsv(unittest.TestCase):
                 reader = from_csv(iterable, encoding='ascii')
         else:
             reader = from_csv(iterable, encoding='ascii')
-            self.assertTrue(isinstance(reader, csv.DictReader))
-
             expected = [
                 {'col1': '1', 'col2': 'a'},
                 {'col1': '2', 'col2': 'b'},
                 {'col1': '3', 'col2': 'c'},
             ]
             self.assertEqual(list(reader), expected)
+
+    def test_empty_file(self):
+        fh = emulate_fh((b''), encoding='ascii')
+
+        reader = from_csv(fh, encoding='ascii')
+        expected = []
+        self.assertEqual(list(reader), expected)
+
 
 
 @unittest.skipIf(not pandas, 'pandas not found')

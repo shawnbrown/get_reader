@@ -2,6 +2,7 @@
 import csv
 import inspect
 import io
+import itertools
 import sys
 from collections import Iterable
 from collections import OrderedDict
@@ -20,68 +21,42 @@ except NameError:
     string_types = str
 
 
-def _dictgen_with_cleanup(iterable, fieldnames, cleanup,
-                          restkey=None, restval=None):
-    """A DictReader-like generator function that calls the given
-    *cleanup* function when finished.
-    """
-    assert callable(cleanup), 'cleanup must be a callable object'
-    try:
-        iterator = iter(iterable)
+def _dict_generator(reader, fieldnames=None, restkey=None, restval=None):
+    if not fieldnames:
+        fieldnames = next(reader, [])
 
-        if not fieldnames:
-            try:
-                fieldnames = next(iterator)
-            except StopIteration:
-                pass  # Continue with empty iterator.
-
-        for row in iterator:
-            if row == []:                          # This code is
-                continue                           # adapted from the
-            d = OrderedDict(zip(fieldnames, row))  # csv.DictReader
-            lf = len(fieldnames)                   # class in the
-            lr = len(row)                          # Python 3.6
-            if lf < lr:                            # Standard Library.
-                d[self.restkey] = row[lf:]
-            elif lf > lr:
-                for key in fieldnames[lr:]:
-                    d[key] = restval
-            yield d
-    finally:
-        cleanup()
+    for row in reader:
+        if row == []:                          # This code is
+            continue                           # adapted from the
+        d = OrderedDict(zip(fieldnames, row))  # csv.DictReader
+        lf = len(fieldnames)                   # class in the
+        lr = len(row)                          # Python 3.6
+        if lf < lr:                            # Standard Library.
+            d[self.restkey] = row[lf:]
+        elif lf > lr:
+            for key in fieldnames[lr:]:
+                d[key] = restval
+        yield d
 
 
 ########################################################################
 # CSV Reader.
 ########################################################################
 if sys.version_info[0] >= 3:
-    def _from_csv(csvfile, fieldnames, encoding, **kwds):
-        if isinstance(csvfile, str):
-            restkey = kwds.pop('restkey', None)
-            restval = kwds.pop('restval', None)
 
-            csvfile = open(csvfile, 'rt', encoding=encoding, newline='')
-            reader = csv.reader(csvfile, **kwds)
-            return _dictgen_with_cleanup(reader,
-                                         fieldnames=fieldnames,
-                                         cleanup=csvfile.close,
-                                         restkey=restkey,
-                                         restval=restval)  # <- EXIT!
+    def _from_csv_path(path, encoding, fieldnames, restkey=None,
+                       restval=None, **kwds):
+        with open(path, 'rt', encoding=encoding, newline='') as f:
+            reader = csv.reader(f, **kwds)
+            for d in _dict_generator(reader, fieldnames, restkey, restval):
+                yield d
 
-        if hasattr(csvfile, 'mode'):
-            if 't' not in csvfile.mode:
-                raise TypeError('expects a text-mode file, '
-                                'got {0!r}'.format(csvfile.mode))
-        elif isinstance(csvfile, io.IOBase):
-            if not isinstance(csvfile, io.TextIOBase):
-                cls_name = csvfile.__class__.__name__
-                raise TypeError('stream object must inherit from '
-                                'io.TextIOBase, got {0}'.format(cls_name))
-        elif not isinstance(csvfile, Iterable):
-            cls_name = csvfile.__class__.__name__
-            raise TypeError('unsupported type {0}'.format(cls_name))
 
-        return csv.DictReader(csvfile, fieldnames, **kwds)
+    def _from_csv_iterable(iterable, encoding, fieldnames, restkey=None,
+                           restval=None, **kwds):
+        # The *encoding* arg is not used but included so that
+        # all csv-helper functions have the same signature.
+        return csv.DictReader(iterable, fieldnames, restkey, restval, **kwds)
 
 else:
     import codecs
@@ -94,13 +69,20 @@ else:
         for the csv module.
         """
         def __init__(self, f, encoding):
-            self.reader = codecs.getreader(encoding)(f)
+            if isinstance(f, io.IOBase):
+                stream_reader = codecs.getreader(encoding)
+                self.reader = stream_reader(f)
+            elif isinstance(f, Iterable):
+                self.reader = (row.decode(encoding) for row in f)
+            else:
+                cls_name = f.__class__.__name__
+                raise TypeError('unsupported type {0}'.format(cls_name))
 
         def __iter__(self):
             return self
 
         def next(self):
-            return self.reader.next().encode('utf-8')
+            return next(self.reader).encode('utf-8')
 
 
     class UnicodeReader(object):
@@ -123,56 +105,40 @@ else:
             self.reader.line_num = value
 
         def next(self):
-            row = self.reader.next()
+            row = next(self.reader)
             return [unicode(s, 'utf-8') for s in row]
 
         def __iter__(self):
             return self
 
 
-    def _from_csv(csvfile, fieldnames, encoding, **kwds):
-        restkey = kwds.pop('restkey', None)
-        restval = kwds.pop('restval', None)
+    def _from_csv_path(path, encoding, fieldnames, restkey=None,
+                       restval=None, **kwds):
+        with io.open(path, 'rb') as f:
+            reader = UnicodeReader(f, encoding=encoding, **kwds)
+            for d in _dict_generator(reader, fieldnames, restkey, restval):
+                yield d
 
-        if isinstance(csvfile, basestring):
-            csvfile = io.open(csvfile, 'rb')
-            unicode_reader = UnicodeReader(csvfile, encoding=encoding, **kwds)
 
-            return _dictgen_with_cleanup(unicode_reader,
-                                         fieldnames=fieldnames,
-                                         cleanup=csvfile.close,
-                                         restkey=restkey,
-                                         restval=restval)  # <- EXIT!
+    def _from_csv_iterable(iterable, encoding, fieldnames, restkey=None,
+                           restval=None, **kwds):
+        # Make sure that iterable returns bytes (not strings or other types).
+        iterator = iter(iterable)
+        first_value = next(iterator, b'')
+        if not isinstance(first_value, bytes):
+            raise TypeError('Python 2 compatibility expects bytes, not '
+                            'strings (did you open the file in binary mode?)')
+        iterator = itertools.chain([first_value], iterator)
 
-        if hasattr(csvfile, 'mode'):
-            if 'b' not in csvfile.mode:
-                raise TypeError('Python 2 compatibility expects binary-'
-                                'mode file, got {0!r}'.format(csvfile.mode))
-        elif isinstance(csvfile, io.IOBase):
-            if isinstance(csvfile, io.TextIOBase):
-                cls_name = csvfile.__class__.__name__
-                raise TypeError('Python 2 compatibility expects byte '
-                                'stream, got {0}'.format(cls_name))
-        elif isinstance(csvfile, Iterable):
-            raise TypeError('iterator input not supported in Python 2')
-        else:
-            cls_name = csvfile.__class__.__name__
-            raise TypeError('unsupported type {0}'.format(cls_name))
-
-        unicode_reader = UnicodeReader(csvfile, encoding=encoding, **kwds)
-
+        # Get unicode-compatible reader and create DictReader instance.
+        unicode_reader = UnicodeReader(iterator, encoding=encoding, **kwds)
         if not fieldnames:
-            try:
-                fieldnames = next(unicode_reader)
-            except StopIteration:
-                pass  # Continue with empty iterator.
-
-        reader = csv.DictReader(io.StringIO(None),  # Initialize DictReader
-                                fieldnames,         # with empty file object.
-                                restkey=restkey,
-                                restval=restval)
-
-        reader.reader = unicode_reader  # Swap-in unicode reader.
+            fieldnames = next(unicode_reader, [])
+        reader = csv.DictReader(io.BytesIO(None),  # Use an empty stream
+                                fieldnames,        # because csv.DictReader
+                                restkey=restkey,   # creates a non-unicode
+                                restval=restval)   # reader when initialized.
+        reader.reader = unicode_reader  # <- Swap-in unicode reader.
 
         return reader
 
@@ -184,14 +150,16 @@ def from_csv(file, **kwds):
     """
     fieldnames = kwds.pop('fieldnames', None)  # Emulate keyword-only args to
     encoding = kwds.pop('encoding', 'utf-8')   # support Python 2.7 and 2.6.
-    return _from_csv(file, fieldnames, encoding, **kwds)
+    if isinstance(file, string_types):
+        return _from_csv_path(file, encoding, fieldnames, **kwds)
+    return _from_csv_iterable(file, encoding, fieldnames, **kwds)
 
 
 if hasattr(inspect, 'Signature'):  # inspect.Signature() is new in 3.3
     from_csv.__signature__ = inspect.Signature([
         inspect.Parameter('file', inspect.Parameter.POSITIONAL_OR_KEYWORD),
-        inspect.Parameter('fieldnames', inspect.Parameter.KEYWORD_ONLY, default=None),
         inspect.Parameter('encoding', inspect.Parameter.KEYWORD_ONLY, default='UTF-8'),
+        inspect.Parameter('fieldnames', inspect.Parameter.KEYWORD_ONLY, default=None),
         inspect.Parameter('kwds', inspect.Parameter.VAR_KEYWORD),
     ])
 
@@ -250,20 +218,17 @@ def from_excel(path, worksheet=0):
         )
 
     book = xlrd.open_workbook(path, on_demand=True)
-
-    if isinstance(worksheet, int):
-        sheet = book.sheet_by_index(worksheet)
-    else:
-        sheet = book.sheet_by_name(worksheet)
-
-    data = (sheet.row(i) for i in range(sheet.nrows))
-    data = ([x.value for x in row] for row in data)
-
-    return _dictgen_with_cleanup(data,
-                                 fieldnames=None,
-                                 cleanup=book.release_resources,
-                                 restkey=None,
-                                 restval=None)
+    try:
+        if isinstance(worksheet, int):
+            sheet = book.sheet_by_index(worksheet)
+        else:
+            sheet = book.sheet_by_name(worksheet)
+        data = (sheet.row(i) for i in range(sheet.nrows))
+        data = ([x.value for x in row] for row in data)
+        for d in _dict_generator(data):
+            yield d
+    finally:
+        book.release_resources()
 
 
 ########################################################################

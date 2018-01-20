@@ -20,7 +20,6 @@ from get_reader import from_csv
 from get_reader import from_pandas
 from get_reader import from_excel
 from get_reader import get_reader
-from get_reader import _dictgen_with_cleanup
 
 
 PY2 = sys.version_info[0] == 2
@@ -40,17 +39,6 @@ def emulate_fh(string, encoding=None):
     if PY2:
         return fh
     return io.TextIOWrapper(fh, encoding=encoding)
-
-
-class TestDictgenWithCleanup(unittest.TestCase):
-    def test_stopiteration(self):
-        pass
-
-    def test_exception(self):
-        pass
-
-    def test_del(self):
-        pass
 
 
 class TestFromCsv(unittest.TestCase):
@@ -103,24 +91,30 @@ class TestFromCsv(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     def test_iterable(self):
-        iterable = iter([
-            'col1,col2',
-            '1,a',
-            '2,b',
-            '3,c',
-        ])
-
-        if PY2:
-            with self.assertRaises(TypeError):
-                reader = from_csv(iterable, encoding='ascii')
+        if not PY2:
+            iterable = iter([
+                'col1,col2',
+                '1,æ',
+                '2,ð',
+                '3,þ',
+            ])
         else:
-            reader = from_csv(iterable, encoding='ascii')
-            expected = [
-                {'col1': '1', 'col2': 'a'},
-                {'col1': '2', 'col2': 'b'},
-                {'col1': '3', 'col2': 'c'},
-            ]
-            self.assertEqual(list(reader), expected)
+            # Using ISO 8859-1 encoded bytes.
+            iterable = iter([
+                b'col1,col2',
+                b'1,\xe6',  # '\xe6' -> æ
+                b'2,\xf0',  # '\xf0' -> ð
+                b'3,\xfe',  # '\xfe' -> þ
+            ])
+
+        reader = from_csv(iterable, encoding='iso8859-1')
+
+        expected = [
+            {'col1': '1', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
+            {'col1': '2', 'col2': chr(0xf0)},  # chr(0xf0) -> ð
+            {'col1': '3', 'col2': chr(0xfe)},  # chr(0xfe) -> þ
+        ]
+        self.assertEqual(list(reader), expected)
 
     def test_empty_file(self):
         fh = emulate_fh((b''), encoding='ascii')

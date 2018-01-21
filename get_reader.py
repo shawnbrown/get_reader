@@ -225,10 +225,11 @@ def from_excel(path, worksheet=0):
             sheet = book.sheet_by_index(worksheet)
         else:
             sheet = book.sheet_by_name(worksheet)
-        data = (sheet.row(i) for i in range(sheet.nrows))
-        data = ([x.value for x in row] for row in data)
+        data = (sheet.row_values(index) for index in range(sheet.nrows))
+
         for d in _dict_generator(data):
             yield d
+
     finally:
         book.release_resources()
 
@@ -239,14 +240,15 @@ def from_excel(path, worksheet=0):
 def get_reader(obj, *args, **kwds):
     """Returns a csv.DictReader or a DictReader-like iterator."""
     if isinstance(obj, string_types):
-        if obj.endswith('.csv'):
+        lowercase = obj.lower()
+        if lowercase.endswith('.csv'):
             return from_csv(obj, *args, **kwds)
-        if obj.endswith('.xlsx') or obj.endswith('.xls'):
+        if lowercase.endswith('.xlsx') or lowercase.endswith('.xls'):
             return from_excel(obj, *args, **kwds)
         raise TypeError('file {0!r} has no recognized extension'.format(obj))
 
     if isinstance(obj, file_types) \
-            and getattr(obj, 'name', '').endswith('.csv'):
+            and getattr(obj, 'name', '').lower().endswith('.csv'):
         return from_csv(obj, *args, **kwds)
 
     if 'pandas' in sys.modules:

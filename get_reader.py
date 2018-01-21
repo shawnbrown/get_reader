@@ -235,6 +235,33 @@ def from_excel(path, worksheet=0):
 
 
 ########################################################################
+# DBF Reader.
+########################################################################
+def from_dbf(filename, encoding=None, **kwds):
+    """Takes a DBF file (from dBase, FoxPro, etc.) and returns
+    a generator that operates like a csv.DictReader---it yields
+    rows as OrderedDict objects whose keys are derived from the
+    DBF table's field names.
+    """
+    try:
+        import dbfread
+    except ImportError:
+        raise ImportError(
+            "No module named 'dbfread'\n"
+            "\n"
+            "This is an optional constructor that requires the "
+            "third-party library 'dbfread'."
+        )
+    if 'load' not in kwds:                           # In this function,
+        kwds['load'] = False                         # dbfread does all of the
+    kwds['recfactory'] = OrderedDict                 # work--it is included
+                                                     # so that the get_reader()
+    table = dbfread.DBF(filename, encoding, **kwds)  # dispatcher can more
+    for record in table:                             # easily detect and
+        yield record                                 # auto-load DBF files.
+
+
+########################################################################
 # Function Dispatching.
 ########################################################################
 def get_reader(obj, *args, **kwds):
@@ -245,6 +272,8 @@ def get_reader(obj, *args, **kwds):
             return from_csv(obj, *args, **kwds)
         if lowercase.endswith('.xlsx') or lowercase.endswith('.xls'):
             return from_excel(obj, *args, **kwds)
+        if lowercase.endswith('.dbf'):
+            return from_dbf(obj, *args, **kwds)
         raise TypeError('file {0!r} has no recognized extension'.format(obj))
 
     if isinstance(obj, file_types) \
@@ -260,8 +289,10 @@ def get_reader(obj, *args, **kwds):
            'get_reader.from_pandas(...), etc.')
     raise TypeError(msg.format(obj))
 
+
 # Add specific constructors functions as properties to
 # get_reader()--this mimics alternate class constructors.
 get_reader.from_csv = from_csv
 get_reader.from_pandas = from_pandas
 get_reader.from_excel = from_excel
+get_reader.from_dbf = from_dbf

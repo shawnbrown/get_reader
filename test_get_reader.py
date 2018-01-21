@@ -16,6 +16,11 @@ try:
 except ImportError:
     xlrd = None
 
+try:
+    import dbfread
+except ImportError:
+    dbfread = None
+
 
 from get_reader import _dict_generator
 from get_reader import _from_csv_iterable
@@ -23,6 +28,7 @@ from get_reader import _from_csv_path
 #from get_reader import from_csv
 from get_reader import from_pandas
 from get_reader import from_excel
+from get_reader import from_dbf
 from get_reader import get_reader
 
 
@@ -263,6 +269,19 @@ class TestFromExcel(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
 
+@unittest.skipIf(not dbfread, 'dbfread not found')
+class TestFromDbf(unittest.TestCase):
+    def test_dbf(self):
+        dirname = os.path.dirname(__file__)
+        filepath = os.path.join(dirname, 'sample_dbase.dbf')
+
+        reader = from_dbf(filepath)
+        expected = [
+            {'COL1': 'dBASE', 'COL2': 1},
+        ]
+        self.assertEqual(list(reader), expected)
+
+
 class TestFunctionDispatching(unittest.TestCase):
     def setUp(self):
         self._orig_dir = os.getcwd()
@@ -324,6 +343,14 @@ class TestFunctionDispatching(unittest.TestCase):
             {'col1': 1, 'col2': 'a'},
             {'col1': 2, 'col2': 'b'},
             {'col1': 3, 'col2': 'c'},
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skipIf(not dbfread, 'dbfread not found')
+    def test_dbf(self):
+        reader = get_reader('sample_dbase.dbf')
+        expected = [
+            {'COL1': 'dBASE', 'COL2': 1},
         ]
         self.assertEqual(list(reader), expected)
 

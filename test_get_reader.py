@@ -16,7 +16,11 @@ try:
 except ImportError:
     xlrd = None
 
-from get_reader import from_csv
+
+from get_reader import _dict_generator
+from get_reader import _from_csv_iterable
+from get_reader import _from_csv_path
+#from get_reader import from_csv
 from get_reader import from_pandas
 from get_reader import from_excel
 from get_reader import get_reader
@@ -24,11 +28,19 @@ from get_reader import get_reader
 
 PY2 = sys.version_info[0] == 2
 
-if PY2:
+
+try:
     chr = unichr
+except NameError:
+    pass
+
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
 
 
-def emulate_fh(string, encoding=None):
+def get_stream(string, encoding=None):
     """Test-helper to return file-like object for *string* data.
 
     In Python 2, Unicode files should be opened in binary-mode but
@@ -41,16 +53,38 @@ def emulate_fh(string, encoding=None):
     return io.TextIOWrapper(fh, encoding=encoding)
 
 
-class TestFromCsv(unittest.TestCase):
-    def test_file_ascii(self):
-        fh = emulate_fh((
+class TestDictGenerator(unittest.TestCase):
+    def test_defaults(self):
+        """A _dict_generator() should yield the same values as an
+        actual csv.DictReader instance.
+        """
+        iterable = [
+            'col1,col2',  # This iterable should yield the following rows:
+            '1,a',        #   {'col1': '1', 'col2': 'a'},
+            '2,b,x',      #   {'col1': '2', 'col2': 'b', None: ['x']},
+            '3',          #   {'col1': '3', 'col2': None}
+        ]
+        generator = _dict_generator(csv.reader(iterable))
+        dict_reader = csv.DictReader(iterable)  # <- Reference implementation.
+        self.assertEqual(list(generator), list(dict_reader))
+
+
+class TestFromCsvIterable(unittest.TestCase):
+    """Test Unicode CSV support.
+
+    Calling _from_csv_iterable() on Python 2 uses the UnicodeReader
+    and UTF8Recoder classes internally for consistent behavior across
+    versions.
+    """
+    def test_ascii(self):
+        stream = get_stream((
             b'col1,col2\n'
             b'1,a\n'
             b'2,b\n'
             b'3,c\n'
         ), encoding='ascii')
 
-        reader = from_csv(fh, encoding='ascii')
+        reader = _from_csv_iterable(stream, encoding='ascii')
         expected = [
             {'col1': '1', 'col2': 'a'},
             {'col1': '2', 'col2': 'b'},
@@ -58,15 +92,15 @@ class TestFromCsv(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    def test_file_iso88591(self):
-        fh = emulate_fh((
+    def test_iso88591(self):
+        stream = get_stream((
             b'col1,col2\n'
             b'1,\xe6\n'  # '\xe6' -> æ (ash)
             b'2,\xf0\n'  # '\xf0' -> ð (eth)
             b'3,\xfe\n'  # '\xfe' -> þ (thorn)
         ), encoding='iso8859-1')
 
-        reader = from_csv(fh, encoding='iso8859-1')
+        reader = _from_csv_iterable(stream, encoding='iso8859-1')
         expected = [
             {'col1': '1', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
             {'col1': '2', 'col2': chr(0xf0)},  # chr(0xf0) -> ð
@@ -74,15 +108,15 @@ class TestFromCsv(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    def test_file_utf8(self):
-        fh = emulate_fh((
+    def test_utf8(self):
+        stream = get_stream((
             b'col1,col2\n'
             b'1,\xce\xb1\n'          # '\xce\xb1'         -> α (Greek alpha)
             b'2,\xe0\xa5\x90\n'      # '\xe0\xa5\x90'     -> ॐ (Devanagari Om)
             b'3,\xf0\x9d\x94\xb8\n'  # '\xf0\x9d\x94\xb8' -> 𝔸 (mathematical double-struck A)
         ), encoding='utf-8')
 
-        reader = from_csv(fh, encoding='utf-8')
+        reader = _from_csv_iterable(stream, encoding='utf-8')
         expected = [
             {'col1': '1', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α
             {'col1': '2', 'col2': chr(0x00950)},  # chr(0x00950) -> ॐ
@@ -90,39 +124,50 @@ class TestFromCsv(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    def test_iterable(self):
-        if not PY2:
-            iterable = iter([
-                'col1,col2',
-                '1,æ',
-                '2,ð',
-                '3,þ',
-            ])
+    def test_bad_types(self):
+        bytes_literal = (
+            b'col1,col2\n'
+            b'1,a\n'
+            b'2,b\n'
+            b'3,c\n'
+        )
+        if PY2:
+            bytes_stream = io.BytesIO(bytes_literal)
+            text_stream = io.TextIOWrapper(bytes_stream, encoding='ascii')
+            with self.assertRaises(TypeError):
+                reader = _from_csv_iterable(text_stream, 'ascii')
         else:
-            # Using ISO 8859-1 encoded bytes.
-            iterable = iter([
-                b'col1,col2',
-                b'1,\xe6',  # '\xe6' -> æ
-                b'2,\xf0',  # '\xf0' -> ð
-                b'3,\xfe',  # '\xfe' -> þ
-            ])
-
-        reader = from_csv(iterable, encoding='iso8859-1')
-
-        expected = [
-            {'col1': '1', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
-            {'col1': '2', 'col2': chr(0xf0)},  # chr(0xf0) -> ð
-            {'col1': '3', 'col2': chr(0xfe)},  # chr(0xfe) -> þ
-        ]
-        self.assertEqual(list(reader), expected)
+            bytes_stream = io.BytesIO(bytes_literal)
+            with self.assertRaises((csv.Error, TypeError)):
+                reader = _from_csv_iterable(bytes_stream, 'ascii')
+                list(reader)  # Trigger evaluation.
 
     def test_empty_file(self):
-        fh = emulate_fh((b''), encoding='ascii')
-
-        reader = from_csv(fh, encoding='ascii')
+        stream = get_stream(b'', encoding='ascii')
+        reader = _from_csv_iterable(stream, encoding='ascii')
         expected = []
         self.assertEqual(list(reader), expected)
 
+
+class TestFromCsvPath(unittest.TestCase):
+    def test_utf8(self):
+        reader = _from_csv_path('sample_text_utf8.csv', encoding='utf-8')
+        expected = [
+            {'col1': 'utf8', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_iso88591(self):
+        reader = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1')
+        expected = [
+            {'col1': 'iso88591', 'col2': chr(0xe6)},  # chr(0xe6) -> æ
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_file_not_found(self):
+        with self.assertRaises(FileNotFoundError):
+            reader = _from_csv_path('missing_file.csv', encoding='iso8859-1')
+            list(reader)  # Trigger evaluation.
 
 
 @unittest.skipIf(not pandas, 'pandas not found')
@@ -267,6 +312,11 @@ class TestFunctionDispatching(unittest.TestCase):
             {'col1': 3, 'col2': 'c'},
         ]
         self.assertEqual(list(reader), expected)
+
+    def test_unidentifiable_type(self):
+        with self.assertRaises(TypeError):
+            obj = object()
+            reader = get_reader(obj)
 
 
 if __name__ == '__main__':

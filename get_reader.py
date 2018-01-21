@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import csv
-import inspect
 import io
 import itertools
 import sys
@@ -22,17 +21,21 @@ except NameError:
 
 
 def _dict_generator(reader, fieldnames=None, restkey=None, restval=None):
+    """Accepts a csv.reader-like object and yields csv.DictReader-like
+    rows.
+    """
+    iterator = iter(reader)
     if not fieldnames:
-        fieldnames = next(reader, [])
+        fieldnames = next(iterator, [])
 
-    for row in reader:
+    for row in iterator:
         if row == []:                          # This code is
             continue                           # adapted from the
         d = OrderedDict(zip(fieldnames, row))  # csv.DictReader
         lf = len(fieldnames)                   # class in the
         lr = len(row)                          # Python 3.6
         if lf < lr:                            # Standard Library.
-            d[self.restkey] = row[lf:]
+            d[restkey] = row[lf:]
         elif lf > lr:
             for key in fieldnames[lr:]:
                 d[key] = restval
@@ -44,19 +47,19 @@ def _dict_generator(reader, fieldnames=None, restkey=None, restval=None):
 ########################################################################
 if sys.version_info[0] >= 3:
 
-    def _from_csv_path(path, encoding, fieldnames, restkey=None,
+    def _from_csv_iterable(iterable, encoding, fieldnames=None, restkey=None,
+                           restval=None, **kwds):
+        # The *encoding* arg is not used but it's included so that
+        # all of the csv-helper functions have the same signature.
+        return csv.DictReader(iterable, fieldnames, restkey, restval, **kwds)
+
+
+    def _from_csv_path(path, encoding, fieldnames=None, restkey=None,
                        restval=None, **kwds):
         with open(path, 'rt', encoding=encoding, newline='') as f:
             reader = csv.reader(f, **kwds)
             for d in _dict_generator(reader, fieldnames, restkey, restval):
                 yield d
-
-
-    def _from_csv_iterable(iterable, encoding, fieldnames, restkey=None,
-                           restval=None, **kwds):
-        # The *encoding* arg is not used but included so that
-        # all csv-helper functions have the same signature.
-        return csv.DictReader(iterable, fieldnames, restkey, restval, **kwds)
 
 else:
     import codecs
@@ -112,7 +115,38 @@ else:
             return self
 
 
-    def _from_csv_path(path, encoding, fieldnames, restkey=None,
+    def _from_csv_iterable(iterable, encoding, fieldnames=None, restkey=None,
+                           restval=None, **kwds):
+        # Check that iterable is expected to return bytes (not strings).
+        try:
+            if isinstance(iterable, file):
+                assert 'b' in iterable.mode
+            elif isinstance(iterable, io.IOBase):
+                assert not isinstance(iterable, io.TextIOBase)
+            else:
+                pass
+                # If *iterable* is a generic iterator, we just have to
+                # trust that the user knows what they're doing. Because
+                # in Python 2, there's no reliable way to tell the
+                # difference between encoded bytes and decoded strings:
+                #
+                #   >>> b'x' == 'x'
+                #   True
+                #
+        except AssertionError:
+            msg = ('Python 2 unicode compatibility expects bytes, not '
+                   'strings (did you open the file in binary mode?)')
+            raise TypeError(msg)
+
+        # Create an empty csv.DictReader---by default, it contains
+        # a non-unicode csv.reader internally. Then, replace its
+        # internal reader with a unicode-compatible one.
+        dict_reader = csv.DictReader([], fieldnames, restkey, restval)
+        dict_reader.reader = UnicodeReader(iterable, encoding=encoding, **kwds)
+        return dict_reader
+
+
+    def _from_csv_path(path, encoding, fieldnames=None, restkey=None,
                        restval=None, **kwds):
         with io.open(path, 'rb') as f:
             reader = UnicodeReader(f, encoding=encoding, **kwds)
@@ -120,48 +154,14 @@ else:
                 yield d
 
 
-    def _from_csv_iterable(iterable, encoding, fieldnames, restkey=None,
-                           restval=None, **kwds):
-        # Make sure that iterable returns bytes (not strings or other types).
-        iterator = iter(iterable)
-        first_value = next(iterator, b'')
-        if not isinstance(first_value, bytes):
-            raise TypeError('Python 2 compatibility expects bytes, not '
-                            'strings (did you open the file in binary mode?)')
-        iterator = itertools.chain([first_value], iterator)
-
-        # Get unicode-compatible reader and create DictReader instance.
-        unicode_reader = UnicodeReader(iterator, encoding=encoding, **kwds)
-        if not fieldnames:
-            fieldnames = next(unicode_reader, [])
-        reader = csv.DictReader(io.BytesIO(None),  # Use an empty stream
-                                fieldnames,        # because csv.DictReader
-                                restkey=restkey,   # creates a non-unicode
-                                restval=restval)   # reader when initialized.
-        reader.reader = unicode_reader  # <- Swap-in unicode reader.
-
-        return reader
-
-
-def from_csv(file, **kwds):
+def from_csv(csvfile, encoding='utf-8', fieldnames=None, **kwds):
     """Return a csv.DictReader or DictReader-like iterator which will
-    iterate over lines in the given *file*. The *file* can be a file
+    iterate over lines in the given data. The *csvfile* can be a file
     path (a string) or any object supported by the csv.reader function.
     """
-    fieldnames = kwds.pop('fieldnames', None)  # Emulate keyword-only args to
-    encoding = kwds.pop('encoding', 'utf-8')   # support Python 2.7 and 2.6.
-    if isinstance(file, string_types):
-        return _from_csv_path(file, encoding, fieldnames, **kwds)
-    return _from_csv_iterable(file, encoding, fieldnames, **kwds)
-
-
-if hasattr(inspect, 'Signature'):  # inspect.Signature() is new in 3.3
-    from_csv.__signature__ = inspect.Signature([
-        inspect.Parameter('file', inspect.Parameter.POSITIONAL_OR_KEYWORD),
-        inspect.Parameter('encoding', inspect.Parameter.KEYWORD_ONLY, default='UTF-8'),
-        inspect.Parameter('fieldnames', inspect.Parameter.KEYWORD_ONLY, default=None),
-        inspect.Parameter('kwds', inspect.Parameter.VAR_KEYWORD),
-    ])
+    if isinstance(csvfile, string_types):
+        return _from_csv_path(csvfile, encoding, fieldnames, **kwds)
+    return _from_csv_iterable(csvfile, encoding, fieldnames, **kwds)
 
 
 ########################################################################
@@ -251,4 +251,7 @@ def get_reader(obj, *args, **kwds):
         if isinstance(obj, sys.modules['pandas'].DataFrame):
             return from_pandas(obj, *args, **kwds)
 
-    raise TypeError('unsupported type {0}'.format(obj.__class__.__name__))
+    raise TypeError(('unable to determine constructor for {0!r}, '
+                     'specify a constructor to load - for example: '
+                     'get_reader.from_csv(...), '
+                     'get_reader.from_pandas(...), etc.').format(obj))

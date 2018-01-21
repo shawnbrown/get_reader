@@ -16,8 +16,10 @@ except NameError:
 
 try:
     string_types = basestring
+    file_types = (io.IOBase, file)
 except NameError:
     string_types = str
+    file_types = io.IOBase
 
 
 def _dict_generator(reader, fieldnames=None, restkey=None, restval=None):
@@ -243,7 +245,7 @@ def get_reader(obj, *args, **kwds):
             return from_excel(obj, *args, **kwds)
         raise TypeError('file {0!r} has no recognized extension'.format(obj))
 
-    if isinstance(obj, io.IOBase) \
+    if isinstance(obj, file_types) \
             and getattr(obj, 'name', '').endswith('.csv'):
         return from_csv(obj, *args, **kwds)
 
@@ -251,7 +253,13 @@ def get_reader(obj, *args, **kwds):
         if isinstance(obj, sys.modules['pandas'].DataFrame):
             return from_pandas(obj, *args, **kwds)
 
-    raise TypeError(('unable to determine constructor for {0!r}, '
-                     'specify a constructor to load - for example: '
-                     'get_reader.from_csv(...), '
-                     'get_reader.from_pandas(...), etc.').format(obj))
+    msg = ('unable to determine constructor for {0!r}, specify a '
+           'constructor to load - for example: get_reader.from_csv(...), '
+           'get_reader.from_pandas(...), etc.')
+    raise TypeError(msg.format(obj))
+
+# Add specific constructors functions as properties to
+# get_reader()--this mimics alternate class constructors.
+get_reader.from_csv = from_csv
+get_reader.from_pandas = from_pandas
+get_reader.from_excel = from_excel

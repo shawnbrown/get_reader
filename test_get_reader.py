@@ -285,6 +285,20 @@ class TestFunctionDispatching(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
+        path = 'sample_text_utf8.csv'
+        encoding = 'utf-8'
+        if PY2:
+            fh = io.open(path, 'rb')
+        else:
+            fh = open(path, 'rt', encoding=encoding, newline='')
+
+        with fh:
+            reader = get_reader(fh, encoding=encoding)
+            expected = [
+                {'col1': 'utf8', 'col2': chr(0x003b1)},  # chr(0x003b1) -> α
+            ]
+            self.assertEqual(list(reader), expected)
+
     @unittest.skipIf(not xlrd, 'xlrd not found')
     def test_excel(self):
         reader = get_reader('sample_excel2007.xlsx')

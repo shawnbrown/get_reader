@@ -3,6 +3,7 @@ import csv
 import io
 import sys
 from collections import Iterable
+from itertools import chain
 
 
 try:
@@ -11,6 +12,33 @@ try:
 except NameError:
     string_types = str
     file_types = io.IOBase
+
+
+########################################################################
+# From Dictionaries.
+########################################################################
+def from_dicts(records):
+    records = iter(records)
+    first_record = next(records, None)
+    header_row = list(first_record.keys())
+
+    yield header_row
+    for row in chain([first_record], records):
+        yield [row.get(key, None) for key in header_row]
+
+
+########################################################################
+# From Namedtuples.
+########################################################################
+def from_namedtuples(records):
+    records = iter(records)
+    first_record = next(records, None)
+    if first_record:
+        yield first_record._fields  # Header row.
+        yield first_record
+
+    for record in records:
+        yield record
 
 
 ########################################################################
@@ -209,6 +237,20 @@ def get_reader(obj, *args, **kwds):
         if 'pandas' in sys.modules:
             if isinstance(obj, sys.modules['pandas'].DataFrame):
                 return from_pandas(obj, *args, **kwds)
+
+        if isinstance(obj, Iterable):
+            iterator = iter(obj)
+            first_value = next(iterator, None)
+            iterator = chain([first_value], iterator)
+
+            if isinstance(first_value, dict):
+                return from_dicts(iterator, *args, **kwds)
+
+            if hasattr(first_value, '_fields'):
+                return from_namedtuples(iterator, *args, **kwds)
+
+            if isinstance(first_value, (list, tuple)):
+                return iterator  # Already seems reader-like.
 
     msg = ('unable to determine constructor for {0!r}, specify a '
            'constructor to load - for example: get_reader.from_csv(...), '

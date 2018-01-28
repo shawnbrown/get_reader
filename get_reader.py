@@ -260,6 +260,8 @@ def get_reader(obj, *args, **kwds):
 
 # Add specific constructor functions as properties of the get_reader()
 # function--this mimics how alternate constructors look on classes.
+get_reader.from_dicts = from_dicts
+get_reader.from_namedtuples = from_namedtuples
 get_reader.from_csv = from_csv
 get_reader.from_pandas = from_pandas
 get_reader.from_excel = from_excel

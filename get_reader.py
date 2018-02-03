@@ -18,15 +18,17 @@ except NameError:
 # From Dictionaries.
 ########################################################################
 def from_dicts(records, fieldnames=None):
-    if not fieldnames:
+    if fieldnames:
+        fieldnames = list(fieldnames)  # Needs to be a sequence.
+        yield fieldnames  # Header row.
+    else:
         records = iter(records)
         first_record = next(records, None)
-        fieldnames = first_record.keys()
-        records = chain([first_record], records)
+        if first_record:
+            records = chain([first_record], records)
+            fieldnames = list(first_record.keys())
+            yield fieldnames  # Header row.
 
-    fieldnames = list(fieldnames)  # Needs to be a sequence.
-
-    yield fieldnames  # Yield header row.
     for row in records:
         yield [row.get(key, None) for key in fieldnames]
 

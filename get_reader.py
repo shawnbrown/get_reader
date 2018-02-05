@@ -14,23 +14,35 @@ except NameError:
     file_types = io.IOBase
 
 
-########################################################################
-# From Dictionaries.
-########################################################################
-def from_dicts(records, fieldnames=None):
-    if fieldnames:
-        fieldnames = list(fieldnames)  # Needs to be a sequence.
-        yield fieldnames  # Header row.
-    else:
-        records = iter(records)
-        first_record = next(records, None)
-        if first_record:
-            records = chain([first_record], records)
-            fieldnames = list(first_record.keys())
-            yield fieldnames  # Header row.
 
-    for row in records:
-        yield [row.get(key, None) for key in fieldnames]
+class get_reader2(object):
+    """Returns a csv.reader or a reader-like iterator."""
+    @staticmethod
+    def from_dicts(records, fieldnames=None):
+        """Takes an iterable of dict-records (like a csv.DictReader)
+        and returns a plain reader-like iterator::
+
+            >>> records = [
+            ...     {'col1': 'a', 'col2': 1},
+            ...     {'col1': 'b', 'col2': 2},
+            ... ]
+            >>> reader = get_reader.from_dicts(records)
+            >>> list(reader)
+            [['col1', 'col2'], ['a', 1], ['b', 2]]
+        """
+        if fieldnames:
+            fieldnames = list(fieldnames)  # Needs to be a sequence.
+            yield fieldnames  # Header row.
+        else:
+            records = iter(records)
+            first_record = next(records, None)
+            if first_record:
+                records = chain([first_record], records)
+                fieldnames = list(first_record.keys())
+                yield fieldnames  # Header row.
+
+        for row in records:
+            yield [row.get(key, None) for key in fieldnames]
 
 
 ########################################################################
@@ -266,7 +278,6 @@ def get_reader(obj, *args, **kwds):
 
 # Add specific constructor functions as properties of the get_reader()
 # function--this mimics how alternate constructors look on classes.
-get_reader.from_dicts = from_dicts
 get_reader.from_namedtuples = from_namedtuples
 get_reader.from_csv = from_csv
 get_reader.from_pandas = from_pandas

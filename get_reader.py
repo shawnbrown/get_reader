@@ -117,7 +117,9 @@ else:
 # Get Reader.
 ########################################################################
 class get_reader(object):
-    """Returns a csv.reader or a reader-like iterator."""
+    """Return a reader object which will iterate over lines in the
+    given data---like :py:func:`csv.reader`.
+    """
     def __new__(cls, obj, *args, **kwds):
         if isinstance(obj, string_types):
             lowercase = obj.lower()
@@ -161,8 +163,9 @@ class get_reader(object):
 
     @staticmethod
     def from_dicts(records, fieldnames=None):
-        """Takes an iterable of dictionaries (like a csv.DictReader)
-        and returns a plain reader-like iterator.
+        """Return a reader object which will iterate over the given
+        dictionary records. This can be thought of as converting a
+        :py:func:`csv.DictReader` into a plain, non-dictionary reader.
         """
         if fieldnames:
             fieldnames = list(fieldnames)  # Needs to be a sequence.
@@ -180,8 +183,8 @@ class get_reader(object):
 
     @staticmethod
     def from_namedtuples(records):
-        """Takes an iterable of namedtuples and returns a reader-like
-        iterator.
+        """Return a reader object which will iterate over the given
+        namedtuple records.
         """
         records = iter(records)
         first_record = next(records, None)
@@ -194,8 +197,9 @@ class get_reader(object):
 
     @staticmethod
     def from_csv(csvfile, encoding='utf-8', **kwds):
-        """Takes a path, file object, or file-like stream and returns
-        a csv.reader or reader-like iterator.
+        """Return a reader object which will iterate over lines in the
+        given *csvfile*. The *csvfile* can be a file path or any valid
+        :py:func:`csv.reader` input.
         """
         if isinstance(csvfile, string_types):
             return _from_csv_path(csvfile, encoding, **kwds)
@@ -203,7 +207,8 @@ class get_reader(object):
 
     @staticmethod
     def from_pandas(df, index=True):
-        """Takes a pandas.DataFrame and returns reader-like iterator.
+        """Return a reader object which will iterate over records in
+        the pandas.DataFrame *df*.
 
         .. note::
 
@@ -221,9 +226,9 @@ class get_reader(object):
 
     @staticmethod
     def from_excel(path, worksheet=0):
-        """Returns data from an Excel worksheet as a reader-like
-        iterator. The *path* must specify to an XLSX or XLS file
-        and the *worksheet* must specify the index or name of the
+        """Return a reader object which will iterate over lines in the
+        given Excel worksheet. *path* must specify to an XLSX or XLS
+        file and *worksheet* should specify the index or name of the
         worksheet to load (defaults to the first worksheet).
 
         Load first worksheet::
@@ -264,8 +269,8 @@ class get_reader(object):
 
     @staticmethod
     def from_dbf(filename, encoding=None, **kwds):
-        """Takes a DBF file (from dBase, FoxPro, etc.) and returns
-        a reader-like iterator.
+        """Return a reader object which will iterate over lines in the
+        given DBF file (from dBase, FoxPro, etc.).
 
         .. note::
 

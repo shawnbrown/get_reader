@@ -116,8 +116,49 @@ else:
 ########################################################################
 # Get Reader.
 ########################################################################
-class get_reader2(object):
+class get_reader(object):
     """Returns a csv.reader or a reader-like iterator."""
+    def __new__(cls, obj, *args, **kwds):
+        if isinstance(obj, string_types):
+            lowercase = obj.lower()
+
+            if lowercase.endswith('.csv'):
+                return cls.from_csv(obj, *args, **kwds)
+
+            if lowercase.endswith('.xlsx') or lowercase.endswith('.xls'):
+                return cls.from_excel(obj, *args, **kwds)
+
+            if lowercase.endswith('.dbf'):
+                return cls.from_dbf(obj, *args, **kwds)
+
+        else:
+            if isinstance(obj, file_types) \
+                    and getattr(obj, 'name', '').lower().endswith('.csv'):
+                return cls.from_csv(obj, *args, **kwds)
+
+            if 'pandas' in sys.modules:
+                if isinstance(obj, sys.modules['pandas'].DataFrame):
+                    return cls.from_pandas(obj, *args, **kwds)
+
+            if isinstance(obj, Iterable):
+                iterator = iter(obj)
+                first_value = next(iterator, None)
+                iterator = chain([first_value], iterator)
+
+                if isinstance(first_value, dict):
+                    return cls.from_dicts(iterator, *args, **kwds)
+
+                if hasattr(first_value, '_fields'):
+                    return cls.from_namedtuples(iterator, *args, **kwds)
+
+                if isinstance(first_value, (list, tuple)):
+                    return iterator  # Already seems reader-like.
+
+        msg = ('unable to determine constructor for {0!r}, specify a '
+               'constructor to load - for example: get_reader.from_csv(...), '
+               'get_reader.from_pandas(...), etc.')
+        raise TypeError(msg.format(obj))
+
     @staticmethod
     def from_dicts(records, fieldnames=None):
         """Takes an iterable of dictionaries (like a csv.DictReader)
@@ -162,7 +203,13 @@ class get_reader2(object):
 
     @staticmethod
     def from_pandas(df, index=True):
-        """Takes a pandas.DataFrame and returns reader-like iterator."""
+        """Takes a pandas.DataFrame and returns reader-like iterator.
+
+        .. note::
+
+            This constructor requires the optional, third-party
+            library pandas.
+        """
         if index:
             yield list(df.index.names) + list(df.columns)
         else:
@@ -219,6 +266,11 @@ class get_reader2(object):
     def from_dbf(filename, encoding=None, **kwds):
         """Takes a DBF file (from dBase, FoxPro, etc.) and returns
         a reader-like iterator.
+
+        .. note::
+
+            This constructor requires the optional, third-party
+            library dbfread.
         """
         try:
             import dbfread
@@ -240,48 +292,3 @@ class get_reader2(object):
 
         for record in table:
             yield record
-
-
-########################################################################
-# Function Dispatching.
-########################################################################
-def get_reader(obj, *args, **kwds):
-    if isinstance(obj, string_types):
-        lowercase = obj.lower()
-
-        if lowercase.endswith('.csv'):
-            return from_csv(obj, *args, **kwds)
-
-        if lowercase.endswith('.xlsx') or lowercase.endswith('.xls'):
-            return from_excel(obj, *args, **kwds)
-
-        if lowercase.endswith('.dbf'):
-            return from_dbf(obj, *args, **kwds)
-
-    else:
-        if isinstance(obj, file_types) \
-                and getattr(obj, 'name', '').lower().endswith('.csv'):
-            return from_csv(obj, *args, **kwds)
-
-        if 'pandas' in sys.modules:
-            if isinstance(obj, sys.modules['pandas'].DataFrame):
-                return from_pandas(obj, *args, **kwds)
-
-        if isinstance(obj, Iterable):
-            iterator = iter(obj)
-            first_value = next(iterator, None)
-            iterator = chain([first_value], iterator)
-
-            if isinstance(first_value, dict):
-                return from_dicts(iterator, *args, **kwds)
-
-            if hasattr(first_value, '_fields'):
-                return from_namedtuples(iterator, *args, **kwds)
-
-            if isinstance(first_value, (list, tuple)):
-                return iterator  # Already seems reader-like.
-
-    msg = ('unable to determine constructor for {0!r}, specify a '
-           'constructor to load - for example: get_reader.from_csv(...), '
-           'get_reader.from_pandas(...), etc.')
-    raise TypeError(msg.format(obj))

@@ -20,15 +20,7 @@ class get_reader2(object):
     @staticmethod
     def from_dicts(records, fieldnames=None):
         """Takes an iterable of dictionaries (like a csv.DictReader)
-        and returns a plain reader-like iterator::
-
-            >>> records = [
-            ...     {'col1': 'a', 'col2': 1},
-            ...     {'col1': 'b', 'col2': 2},
-            ... ]
-            >>> reader = get_reader.from_dicts(records)
-            >>> list(reader)
-            [['col1', 'col2'], ['a', 1], ['b', 2]]
+        and returns a plain reader-like iterator.
         """
         if fieldnames:
             fieldnames = list(fieldnames)  # Needs to be a sequence.
@@ -47,19 +39,7 @@ class get_reader2(object):
     @staticmethod
     def from_namedtuples(records):
         """Takes an iterable of namedtuples and returns a reader-like
-        iterator::
-
-            >>> from collections import namedtuple
-            >>> ntup = namedtuple('ntup', ['col1', 'col2'])
-            >>> records = [
-            ...     ntup('a', 1),
-            ...     ntup('b', 2),
-            ... ]
-            >>> reader = get_reader.from_namedtuples(records)
-            >>> list(reader)
-            [('col1', 'col2'),
-             ntup(col1='a', col2=1),
-             ntup(col1='b', col2=2)]
+        iterator.
         """
         records = iter(records)
         first_record = next(records, None)
@@ -69,6 +49,16 @@ class get_reader2(object):
 
         for record in records:
             yield record
+
+    @staticmethod
+    def from_csv(csvfile, encoding='utf-8', **kwds):
+        """Takes a path, file object, or file-like stream and returns
+        a csv.reader or reader-like iterator.
+        """
+        if isinstance(csvfile, string_types):
+            return _from_csv_path(csvfile, encoding, **kwds)
+        return _from_csv_iterable(csvfile, encoding, **kwds)
+
 
 
 ########################################################################
@@ -168,12 +158,6 @@ else:
         with open(path, 'rb') as f:
             for row in UnicodeReader(f, encoding=encoding, **kwds):
                 yield row
-
-
-def from_csv(csvfile, encoding='utf-8', **kwds):
-    if isinstance(csvfile, string_types):
-        return _from_csv_path(csvfile, encoding, **kwds)
-    return _from_csv_iterable(csvfile, encoding, **kwds)
 
 
 ########################################################################
@@ -290,7 +274,6 @@ def get_reader(obj, *args, **kwds):
 
 # Add specific constructor functions as properties of the get_reader()
 # function--this mimics how alternate constructors look on classes.
-get_reader.from_csv = from_csv
 get_reader.from_pandas = from_pandas
 get_reader.from_excel = from_excel
 get_reader.from_dbf = from_dbf

@@ -25,7 +25,6 @@ except ImportError:
 from get_reader import get_reader2
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
-from get_reader import from_pandas
 from get_reader import from_excel
 from get_reader import from_dbf
 from get_reader import get_reader
@@ -252,7 +251,7 @@ class TestFromPandas(unittest.TestCase):
         })
 
     def test_automatic_indexing(self):
-        reader = from_pandas(self.df)  # <- Includes index by default.
+        reader = get_reader2.from_pandas(self.df)  # <- Includes index by default.
         expected = [
             [None, 'col1', 'col2'],
             [0, 1, 'a'],
@@ -261,7 +260,7 @@ class TestFromPandas(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-        reader = from_pandas(self.df, index=False)  # <- Omits index.
+        reader = get_reader2.from_pandas(self.df, index=False)  # <- Omits index.
         expected = [
             ['col1', 'col2'],
             [1, 'a'],
@@ -273,7 +272,7 @@ class TestFromPandas(unittest.TestCase):
     def test_simple_index(self):
         self.df.index = pandas.Index(['x', 'y', 'z'], name='col0')
 
-        reader = from_pandas(self.df)
+        reader = get_reader2.from_pandas(self.df)
         expected = [
             ['col0', 'col1', 'col2'],
             ['x', 1, 'a'],
@@ -282,7 +281,7 @@ class TestFromPandas(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-        reader = from_pandas(self.df, index=False)
+        reader = get_reader2.from_pandas(self.df, index=False)
         expected = [
             ['col1', 'col2'],
             [1, 'a'],
@@ -296,7 +295,7 @@ class TestFromPandas(unittest.TestCase):
         index = pandas.MultiIndex.from_tuples(index_values, names=['A', 'B'])
         self.df.index = index
 
-        reader = from_pandas(self.df)
+        reader = get_reader2.from_pandas(self.df)
         expected = [
             ['A', 'B', 'col1', 'col2'],
             ['x', 'one', 1, 'a'],
@@ -305,7 +304,7 @@ class TestFromPandas(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-        reader = from_pandas(self.df, index=False)
+        reader = get_reader2.from_pandas(self.df, index=False)
         expected = [
             ['col1', 'col2'],
             [1, 'a'],

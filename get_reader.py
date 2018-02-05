@@ -160,19 +160,17 @@ class get_reader2(object):
             return _from_csv_path(csvfile, encoding, **kwds)
         return _from_csv_iterable(csvfile, encoding, **kwds)
 
+    @staticmethod
+    def from_pandas(df, index=True):
+        """Takes a pandas.DataFrame and returns reader-like iterator."""
+        if index:
+            yield list(df.index.names) + list(df.columns)
+        else:
+            yield list(df.columns)
 
-########################################################################
-# Pandas DataFrame Reader.
-########################################################################
-def from_pandas(df, index=True):
-    if index:
-        yield list(df.index.names) + list(df.columns)
-    else:
-        yield list(df.columns)
-
-    records = df.to_records(index=index)
-    for record in records:
-        yield list(record)
+        records = df.to_records(index=index)
+        for record in records:
+            yield list(record)
 
 
 ########################################################################
@@ -275,6 +273,5 @@ def get_reader(obj, *args, **kwds):
 
 # Add specific constructor functions as properties of the get_reader()
 # function--this mimics how alternate constructors look on classes.
-get_reader.from_pandas = from_pandas
 get_reader.from_excel = from_excel
 get_reader.from_dbf = from_dbf

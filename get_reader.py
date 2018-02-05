@@ -19,7 +19,7 @@ class get_reader2(object):
     """Returns a csv.reader or a reader-like iterator."""
     @staticmethod
     def from_dicts(records, fieldnames=None):
-        """Takes an iterable of dict-records (like a csv.DictReader)
+        """Takes an iterable of dictionaries (like a csv.DictReader)
         and returns a plain reader-like iterator::
 
             >>> records = [
@@ -44,19 +44,31 @@ class get_reader2(object):
         for row in records:
             yield [row.get(key, None) for key in fieldnames]
 
+    @staticmethod
+    def from_namedtuples(records):
+        """Takes an iterable of namedtuples and returns a reader-like
+        iterator::
 
-########################################################################
-# From Namedtuples.
-########################################################################
-def from_namedtuples(records):
-    records = iter(records)
-    first_record = next(records, None)
-    if first_record:
-        yield first_record._fields  # Header row.
-        yield first_record
+            >>> from collections import namedtuple
+            >>> ntup = namedtuple('ntup', ['col1', 'col2'])
+            >>> records = [
+            ...     ntup('a', 1),
+            ...     ntup('b', 2),
+            ... ]
+            >>> reader = get_reader.from_namedtuples(records)
+            >>> list(reader)
+            [('col1', 'col2'),
+             ntup(col1='a', col2=1),
+             ntup(col1='b', col2=2)]
+        """
+        records = iter(records)
+        first_record = next(records, None)
+        if first_record:
+            yield first_record._fields  # Header row.
+            yield first_record
 
-    for record in records:
-        yield record
+        for record in records:
+            yield record
 
 
 ########################################################################
@@ -278,7 +290,6 @@ def get_reader(obj, *args, **kwds):
 
 # Add specific constructor functions as properties of the get_reader()
 # function--this mimics how alternate constructors look on classes.
-get_reader.from_namedtuples = from_namedtuples
 get_reader.from_csv = from_csv
 get_reader.from_pandas = from_pandas
 get_reader.from_excel = from_excel

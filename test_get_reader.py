@@ -23,7 +23,6 @@ except ImportError:
     dbfread = None
 
 from get_reader import get_reader2
-from get_reader import from_namedtuples
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
 from get_reader import from_pandas
@@ -104,7 +103,7 @@ class TestFromNamedtuples(unittest.TestCase):
             ntup(2, 'b'),
             ntup(3, 'c'),
         ]
-        reader = from_namedtuples(records)
+        reader = get_reader2.from_namedtuples(records)
 
         expected = [
             ('col1', 'col2'),
@@ -116,7 +115,7 @@ class TestFromNamedtuples(unittest.TestCase):
 
     def test_empty_records(self):
         records = []
-        reader = from_namedtuples(records)
+        reader = get_reader2.from_namedtuples(records)
         self.assertEqual(list(records), [])
 
 

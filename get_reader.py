@@ -14,55 +14,8 @@ except NameError:
     file_types = io.IOBase
 
 
-
-class get_reader2(object):
-    """Returns a csv.reader or a reader-like iterator."""
-    @staticmethod
-    def from_dicts(records, fieldnames=None):
-        """Takes an iterable of dictionaries (like a csv.DictReader)
-        and returns a plain reader-like iterator.
-        """
-        if fieldnames:
-            fieldnames = list(fieldnames)  # Needs to be a sequence.
-            yield fieldnames  # Header row.
-        else:
-            records = iter(records)
-            first_record = next(records, None)
-            if first_record:
-                records = chain([first_record], records)
-                fieldnames = list(first_record.keys())
-                yield fieldnames  # Header row.
-
-        for row in records:
-            yield [row.get(key, None) for key in fieldnames]
-
-    @staticmethod
-    def from_namedtuples(records):
-        """Takes an iterable of namedtuples and returns a reader-like
-        iterator.
-        """
-        records = iter(records)
-        first_record = next(records, None)
-        if first_record:
-            yield first_record._fields  # Header row.
-            yield first_record
-
-        for record in records:
-            yield record
-
-    @staticmethod
-    def from_csv(csvfile, encoding='utf-8', **kwds):
-        """Takes a path, file object, or file-like stream and returns
-        a csv.reader or reader-like iterator.
-        """
-        if isinstance(csvfile, string_types):
-            return _from_csv_path(csvfile, encoding, **kwds)
-        return _from_csv_iterable(csvfile, encoding, **kwds)
-
-
-
 ########################################################################
-# CSV Reader.
+# Unicode Aware CSV Handling.
 ########################################################################
 if sys.version_info[0] >= 3:
 
@@ -158,6 +111,54 @@ else:
         with open(path, 'rb') as f:
             for row in UnicodeReader(f, encoding=encoding, **kwds):
                 yield row
+
+
+########################################################################
+# Get Reader.
+########################################################################
+class get_reader2(object):
+    """Returns a csv.reader or a reader-like iterator."""
+    @staticmethod
+    def from_dicts(records, fieldnames=None):
+        """Takes an iterable of dictionaries (like a csv.DictReader)
+        and returns a plain reader-like iterator.
+        """
+        if fieldnames:
+            fieldnames = list(fieldnames)  # Needs to be a sequence.
+            yield fieldnames  # Header row.
+        else:
+            records = iter(records)
+            first_record = next(records, None)
+            if first_record:
+                records = chain([first_record], records)
+                fieldnames = list(first_record.keys())
+                yield fieldnames  # Header row.
+
+        for row in records:
+            yield [row.get(key, None) for key in fieldnames]
+
+    @staticmethod
+    def from_namedtuples(records):
+        """Takes an iterable of namedtuples and returns a reader-like
+        iterator.
+        """
+        records = iter(records)
+        first_record = next(records, None)
+        if first_record:
+            yield first_record._fields  # Header row.
+            yield first_record
+
+        for record in records:
+            yield record
+
+    @staticmethod
+    def from_csv(csvfile, encoding='utf-8', **kwds):
+        """Takes a path, file object, or file-like stream and returns
+        a csv.reader or reader-like iterator.
+        """
+        if isinstance(csvfile, string_types):
+            return _from_csv_path(csvfile, encoding, **kwds)
+        return _from_csv_iterable(csvfile, encoding, **kwds)
 
 
 ########################################################################

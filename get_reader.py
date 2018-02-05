@@ -215,31 +215,31 @@ class get_reader2(object):
         finally:
             book.release_resources()
 
+    @staticmethod
+    def from_dbf(filename, encoding=None, **kwds):
+        """Takes a DBF file (from dBase, FoxPro, etc.) and returns
+        a reader-like iterator.
+        """
+        try:
+            import dbfread
+        except ImportError:
+            raise ImportError(
+                "No module named 'dbfread'\n"
+                "\n"
+                "This is an optional constructor that requires the "
+                "third-party library 'dbfread'."
+            )
+        if 'load' not in kwds:
+            kwds['load'] = False
+        def recfactory(record):
+            return [x[1] for x in record]
+        kwds['recfactory'] = recfactory
+        table = dbfread.DBF(filename, encoding, **kwds)
 
-########################################################################
-# DBF Reader.
-########################################################################
-def from_dbf(filename, encoding=None, **kwds):
-    try:
-        import dbfread
-    except ImportError:
-        raise ImportError(
-            "No module named 'dbfread'\n"
-            "\n"
-            "This is an optional constructor that requires the "
-            "third-party library 'dbfread'."
-        )
-    if 'load' not in kwds:
-        kwds['load'] = False
-    def recfactory(record):
-        return [x[1] for x in record]
-    kwds['recfactory'] = recfactory
-    table = dbfread.DBF(filename, encoding, **kwds)
+        yield table.field_names  # <- Header row.
 
-    yield table.field_names  # <- Header row.
-
-    for record in table:
-        yield record
+        for record in table:
+            yield record
 
 
 ########################################################################
@@ -285,8 +285,3 @@ def get_reader(obj, *args, **kwds):
            'constructor to load - for example: get_reader.from_csv(...), '
            'get_reader.from_pandas(...), etc.')
     raise TypeError(msg.format(obj))
-
-
-# Add specific constructor functions as properties of the get_reader()
-# function--this mimics how alternate constructors look on classes.
-get_reader.from_dbf = from_dbf

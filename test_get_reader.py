@@ -25,7 +25,6 @@ except ImportError:
 from get_reader import get_reader2
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
-from get_reader import from_dbf
 from get_reader import get_reader
 
 
@@ -348,7 +347,7 @@ class TestFromDbf(unittest.TestCase):
         dirname = os.path.dirname(__file__)
         filepath = os.path.join(dirname, 'sample_dbase.dbf')
 
-        reader = from_dbf(filepath)
+        reader = get_reader2.from_dbf(filepath)
         expected = [
             ['COL1', 'COL2'],
             ['dBASE', 1],

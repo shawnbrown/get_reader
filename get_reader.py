@@ -172,32 +172,48 @@ class get_reader2(object):
         for record in records:
             yield list(record)
 
+    @staticmethod
+    def from_excel(path, worksheet=0):
+        """Returns data from an Excel worksheet as a reader-like
+        iterator. The *path* must specify to an XLSX or XLS file
+        and the *worksheet* must specify the index or name of the
+        worksheet to load (defaults to the first worksheet).
 
-########################################################################
-# MS Excel Reader.
-########################################################################
-def from_excel(path, worksheet=0):
-    try:
-        import xlrd
-    except ImportError:
-        raise ImportError(
-            "No module named 'xlrd'\n"
-            "\n"
-            "This is an optional constructor that requires the "
-            "third-party library 'xlrd'."
-        )
-    book = xlrd.open_workbook(path, on_demand=True)
-    try:
-        if isinstance(worksheet, int):
-            sheet = book.sheet_by_index(worksheet)
-        else:
-            sheet = book.sheet_by_name(worksheet)
+        Load first worksheet::
 
-        for index in range(sheet.nrows):
-            yield sheet.row_values(index)
+            reader = get_reader.from_excel('mydata.xlsx')
 
-    finally:
-        book.release_resources()
+        Specific worksheets can be loaded by name (a string) or
+        index (an integer)::
+
+            reader = get_reader.from_excel('mydata.xlsx', 'Sheet 2')
+
+        .. note::
+
+            This constructor requires the optional, third-party
+            library xlrd.
+        """
+        try:
+            import xlrd
+        except ImportError:
+            raise ImportError(
+                "No module named 'xlrd'\n"
+                "\n"
+                "This is an optional constructor that requires the "
+                "third-party library 'xlrd'."
+            )
+        book = xlrd.open_workbook(path, on_demand=True)
+        try:
+            if isinstance(worksheet, int):
+                sheet = book.sheet_by_index(worksheet)
+            else:
+                sheet = book.sheet_by_name(worksheet)
+
+            for index in range(sheet.nrows):
+                yield sheet.row_values(index)
+
+        finally:
+            book.release_resources()
 
 
 ########################################################################
@@ -273,5 +289,4 @@ def get_reader(obj, *args, **kwds):
 
 # Add specific constructor functions as properties of the get_reader()
 # function--this mimics how alternate constructors look on classes.
-get_reader.from_excel = from_excel
 get_reader.from_dbf = from_dbf

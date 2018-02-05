@@ -25,7 +25,6 @@ except ImportError:
 from get_reader import get_reader2
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
-from get_reader import from_excel
 from get_reader import from_dbf
 from get_reader import get_reader
 
@@ -321,7 +320,7 @@ class TestFromExcel(unittest.TestCase):
         self.filepath = os.path.join(dirname, 'sample_multiworksheet.xlsx')
 
     def test_default_worksheet(self):
-        reader = from_excel(self.filepath)  # <- Defaults to 1st worksheet.
+        reader = get_reader2.from_excel(self.filepath)  # <- Defaults to 1st worksheet.
 
         expected = [
             ['col1', 'col2'],
@@ -332,7 +331,7 @@ class TestFromExcel(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     def test_specified_worksheet(self):
-        reader = from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
+        reader = get_reader2.from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
 
         expected = [
             ['col1', 'col2'],

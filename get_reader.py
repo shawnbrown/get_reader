@@ -3,6 +3,7 @@ import csv
 import io
 import sys
 from collections import Iterable
+from collections import Mapping
 from itertools import chain
 
 
@@ -158,6 +159,10 @@ class get_reader(object):
                     and getattr(obj, 'name', '').lower().endswith('.csv'):
                 return cls.from_csv(obj, *args, **kwds)
 
+            if 'datatest' in sys.modules:
+                if isinstance(obj, sys.modules['datatest'].Query):
+                    return cls.from_datatest(obj, *args, **kwds)
+
             if 'pandas' in sys.modules:
                 if isinstance(obj, sys.modules['pandas'].DataFrame):
                     return cls.from_pandas(obj, *args, **kwds)
@@ -228,6 +233,88 @@ class get_reader(object):
 
         for record in records:
             yield record
+
+    @staticmethod
+    def from_datatest(query, fieldnames=None):
+        """Return a reader object which will iterate over the records
+        returned from the given datatest.Query *query*. If *fieldnames*
+        is not provided, this function tries to construct names using
+        the values from the query's ``columns`` argument.
+        """
+        import datatest
+
+        nonstringiter = lambda obj: (not isinstance(obj, string_types)
+                                     and isinstance(obj, Iterable))
+        result = query()
+        evaluation_type = result.evaluation_type
+        first_record = next(result)
+
+        if issubclass(evaluation_type, Mapping):
+            # Get first key and value from result and rebuild object.
+            first_key, value = first_record
+            if isinstance(value, result.__class__):
+                first_value = next(value)
+                value = chain([first_value], value)
+            else:
+                first_value = value
+            result = chain([(first_key, value)], result)
+
+            # Get format functions.
+            if nonstringiter(first_key):
+                format_key = lambda k: list(k)
+            else:
+                format_key = lambda k: [k]
+
+            if nonstringiter(first_value):
+                format_value = lambda v: list(v)
+            else:
+                format_value = lambda v: [v]
+
+            if not fieldnames:
+                try:
+                    col_key, col_val = next(iter(query.args[0].items()))
+                    col_val = next(iter(col_val))
+                    fieldnames = format_key(col_key) + format_value(col_val)
+
+                    sample_row = format_key(first_key) \
+                                 + format_value(first_value)
+                    assert len(sample_row) == len(fieldnames)
+                except Exception:
+                    msg = ('must provide fieldnames, cannot '
+                           'be determined automatically')
+                    raise TypeError(msg)
+
+            yield fieldnames
+            for k, v in result:
+                k = format_key(k)
+                if nonstringiter(v) and not isinstance(v, tuple):
+                    for subval in v:
+                        subval = format_value(subval)
+                        yield k + subval
+                else:
+                    yield k + format_value(v)
+
+        else:
+            # Get format function and rebuild result object.
+            if nonstringiter(first_record):
+                format_value = lambda v: list(v)
+            else:
+                format_value = lambda v: [v]
+            result = chain([first_record], result)
+
+            if not fieldnames:
+                try:
+                    fieldnames = format_value(next(iter(query.args[0])))
+                    sample_row = format_value(first_record)
+                    assert len(fieldnames) == len(sample_row)
+                except Exception:
+                    msg = ('must provide fieldnames, cannot '
+                           'be determined automatically')
+                    raise TypeError(msg)
+
+            yield fieldnames
+            for value in result:
+                yield format_value(value)
 
     @staticmethod
     def from_pandas(df, index=True):

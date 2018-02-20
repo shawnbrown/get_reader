@@ -241,32 +241,30 @@ class get_reader(object):
         is not provided, this function tries to construct names using
         the values from the query's ``columns`` argument.
         """
-        nonstringiter = lambda obj: (not isinstance(obj, string_types)
-                                     and isinstance(obj, Iterable))
+        def nonstringiter(obj):
+            return (not isinstance(obj, string_types)
+                    and isinstance(obj, Iterable))
+
+        def getfunc(obj):
+            if nonstringiter(obj):
+                return lambda x: list(x)
+            return lambda x: [x]
+
         result = query()
         evaluation_type = result.evaluation_type
         first_record = next(result)
 
         if issubclass(evaluation_type, Mapping):
-            # Get first key and value from result and rebuild object.
             first_key, value = first_record
-            if isinstance(value, result.__class__):
-                first_value = next(value)
-                value = chain([first_value], value)
+            if isinstance(value, result.__class__):  # If value is also result
+                first_value = next(value)            # object, get its first
+                value = chain([first_value], value)  # value and rebuild.
             else:
                 first_value = value
             result = chain([(first_key, value)], result)
 
-            # Get format functions.
-            if nonstringiter(first_key):
-                format_key = lambda k: list(k)
-            else:
-                format_key = lambda k: [k]
-
-            if nonstringiter(first_value):
-                format_value = lambda v: list(v)
-            else:
-                format_value = lambda v: [v]
+            format_key = getfunc(first_key)
+            format_value = getfunc(first_value)
 
             if not fieldnames:
                 try:
@@ -293,12 +291,9 @@ class get_reader(object):
                     yield k + format_value(v)
 
         else:
-            # Get format function and rebuild result object.
-            if nonstringiter(first_record):
-                format_value = lambda v: list(v)
-            else:
-                format_value = lambda v: [v]
             result = chain([first_record], result)
+
+            format_value = getfunc(first_record)
 
             if not fieldnames:
                 try:

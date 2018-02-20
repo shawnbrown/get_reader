@@ -241,8 +241,6 @@ class get_reader(object):
         is not provided, this function tries to construct names using
         the values from the query's ``columns`` argument.
         """
-        import datatest
-
         nonstringiter = lambda obj: (not isinstance(obj, string_types)
                                      and isinstance(obj, Iterable))
         result = query()

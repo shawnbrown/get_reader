@@ -240,6 +240,11 @@ class get_reader(object):
         returned from the given datatest.Query *query*. If *fieldnames*
         is not provided, this function tries to construct names using
         the values from the query's ``columns`` argument.
+
+        .. note::
+
+            This constructor requires the optional, third-party
+            library datatest.
         """
         def nonstringiter(obj):
             return (not isinstance(obj, string_types)

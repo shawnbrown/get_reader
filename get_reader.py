@@ -15,20 +15,6 @@ except NameError:
     file_types = io.IOBase
 
 
-if 'datatest' in sys.modules:
-    datatest_Query = sys.modules['datatest'].Query
-    datatest_types = (datatest_Query,)
-else:
-    datatest_types = tuple()
-
-
-if 'pandas' in sys.modules:
-    pandas_DataFrame = sys.modules['pandas'].DataFrame
-    pandas_types = (pandas_DataFrame,)
-else:
-    pandas_types = tuple()
-
-
 ########################################################################
 # Unicode Aware CSV Handling.
 ########################################################################
@@ -173,11 +159,13 @@ class get_reader(object):
                     and getattr(obj, 'name', '').lower().endswith('.csv'):
                 return cls.from_csv(obj, *args, **kwds)
 
-            if isinstance(obj, datatest_types):
-                return cls.from_datatest(obj, *args, **kwds)
+            if 'datatest' in sys.modules:
+                if isinstance(obj, sys.modules['datatest'].Query):
+                    return cls.from_datatest(obj, *args, **kwds)
 
-            if isinstance(obj, pandas_types):
-                return cls.from_pandas(obj, *args, **kwds)
+            if 'pandas' in sys.modules:
+                if isinstance(obj, sys.modules['pandas'].DataFrame):
+                    return cls.from_pandas(obj, *args, **kwds)
 
             if isinstance(obj, Iterable):
                 iterator = iter(obj)

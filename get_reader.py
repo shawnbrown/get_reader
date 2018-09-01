@@ -2,10 +2,14 @@
 import csv
 import io
 import sys
-from collections.abc import Iterable
-from collections.abc import Mapping
 from itertools import chain
 
+try:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Iterable
+    from collections import Mapping
 
 try:
     string_types = basestring

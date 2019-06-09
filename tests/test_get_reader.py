@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import collections
+import contextlib
 import csv
 import io
 import os
@@ -43,6 +44,20 @@ try:
     FileNotFoundError
 except NameError:
     FileNotFoundError = IOError
+
+
+class working_directory(contextlib.ContextDecorator):
+    def __init__(self, path):
+        if os.path.isfile(path):
+            path = os.path.dirname(path)
+        self._working_dir = os.path.abspath(path)
+
+    def __enter__(self):
+        self._original_dir = os.path.abspath(os.getcwd())
+        os.chdir(self._working_dir)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self._original_dir)
 
 
 class TestFromDicts(unittest.TestCase):
@@ -244,6 +259,7 @@ class TestFromCsvIterable(unittest.TestCase):
 
 
 class TestFromCsvPath(unittest.TestCase):
+    @working_directory(__file__)
     def test_utf8(self):
         reader = _from_csv_path('sample_text_utf8.csv', encoding='utf-8')
         expected = [
@@ -252,14 +268,17 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
+    @working_directory(__file__)
     def test_iso88591(self):
         reader = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1')
+
         expected = [
             ['col1', 'col2'],
             ['iso88591', chr(0xe6)],  # chr(0xe6) -> æ
         ]
         self.assertEqual(list(reader), expected)
 
+    @working_directory(__file__)
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
             reader = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8')

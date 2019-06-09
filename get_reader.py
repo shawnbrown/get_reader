@@ -11,6 +11,10 @@ except ImportError:
     from collections import Iterable
     from collections import Mapping
 
+
+__version__ = '0.0.1'
+
+
 try:
     string_types = basestring
     file_types = (io.IOBase, file)

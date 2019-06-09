@@ -1,0 +1,9 @@
+# Requirements for Developers
+
+datatest
+dbfread
+pandas
+xlrd
+twine
+wheel
+

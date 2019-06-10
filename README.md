@@ -20,9 +20,9 @@ Install
 You can install `get_reader` using `pip` or you can vendor it directly in
 your own projects:
 
-> ```shell
-> pip install get_reader
-> ```
+```shell
+pip install get_reader
+```
 
 
 Reference
@@ -40,22 +40,22 @@ Reference
 >
 > Using auto-detection:
 >
->> ```python
->> from get_reader import get_reader
->>
->> # CSV file.
->> reader = get_reader('myfile.csv')
->>
->> # Excel file.
->> reader = get_reader('myfile.xlsx', worksheet='Sheet2')
->>
->> # Pandas DataFrame.
->> df = pandas.DataFrame([...])
->> reader = get_reader(df)
->>
->> # DBF file.
->> reader = get_reader('myfile.dbf')
->> ```
+> ```python
+> from get_reader import get_reader
+>
+> # CSV file.
+> reader = get_reader('myfile.csv')
+>
+> # Excel file.
+> reader = get_reader('myfile.xlsx', worksheet='Sheet2')
+>
+> # Pandas DataFrame.
+> df = pandas.DataFrame([...])
+> reader = get_reader(df)
+>
+> # DBF file.
+> reader = get_reader('myfile.dbf')
+> ```
 >
 > If the *obj* type cannot be automatically determined, you can call one
 > of the `from_...()` methods listed below.
@@ -70,10 +70,10 @@ Reference
 >> called---file objects and list objects are both suitable. If
 >> *csvfile* is a file object, it should be opened with `newline=''`.
 >>
->>> ```python
->>> from get_reader import get_reader
->>> reader = get_reader.from_csv('myfile.tab', delimiter='\t')
->>> ```
+>> ```python
+>> from get_reader import get_reader
+>> reader = get_reader.from_csv('myfile.tab', delimiter='\t')
+>> ```
 >
 >
 > **from\_excel**(*path*, *worksheet*=0)
@@ -85,17 +85,17 @@ Reference
 >>
 >> Load first worksheet:
 >>
->>> ```python
->>> from get_reader import get_reader
->>> reader = get_reader.from_excel('mydata.xlsx')
->>> ```
+>> ```python
+>> from get_reader import get_reader
+>> reader = get_reader.from_excel('mydata.xlsx')
+>> ```
 >>
 >> Specific worksheets can be loaded by name (a string) or index
 >> (an integer):
 >>
->>> ```python
->>> reader = get_reader.from_excel('mydata.xlsx', 'Sheet 2')
->>> ```
+>> ```python
+>> reader = get_reader.from_excel('mydata.xlsx', 'Sheet 2')
+>> ```
 >
 >
 > **from\_pandas**(*df*, *index*=True)
@@ -124,15 +124,15 @@ Reference
 >>  dictionary *records*. This can be thought of as converting a
 >>  `csv.DictReader()` into a plain, non-dictionary `csv.reader()`.
 >>
->>> ```python
->>> from get_reader import get_reader
->>>
->>> dictrows = [
->>>     {'A': 1, 'B': 'x'},
->>>     {'A': 2, 'B': 'y'},
->>> ]
->>> reader = get_reader.from_dict(dictrows)
->>> ```
+>> ```python
+>> from get_reader import get_reader
+>>
+>> dictrows = [
+>>     {'A': 1, 'B': 'x'},
+>>     {'A': 2, 'B': 'y'},
+>> ]
+>> reader = get_reader.from_dicts(dictrows)
+>> ```
 >>
 >> This method assumes that record contents are consistent. If the first record
 >> in a dictionary, it is assumed that all following records will be dictionaries
@@ -144,18 +144,18 @@ Reference
 >> Return a reader object which will iterate over the given
 >> `namedtuple` records.
 >>
->>> ```python
->>> from collections import namedtuple
->>> from get_reader import get_reader
->>>
->>> ntup = namedtuple('mytuple', ['A', 'B'])
->>>
->>> tuplerows = [
->>>     ntup(A=1, B='x'),
->>>     ntup(A=2, B='y'),
->>> ]
->>> reader = get_reader.from_dict(tuplerows)
->>> ```
+>> ```python
+>> from collections import namedtuple
+>> from get_reader import get_reader
+>>
+>> ntup = namedtuple('mytuple', ['A', 'B'])
+>>
+>> tuplerows = [
+>>     ntup(A=1, B='x'),
+>>     ntup(A=2, B='y'),
+>> ]
+>> reader = get_reader.from_namedtuples(tuplerows)
+>> ```
 
 ------------------------------------
 

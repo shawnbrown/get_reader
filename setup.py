@@ -38,7 +38,7 @@ setuptools.setup(
     author_email='shawnbrown@users.noreply.github.com',
 
     # Optional fields:
-    install_requires=[],  # <- No dependencies!
+    install_requires=[],  # <- No hard requirements!
     extras_require={
         'Excel': ['xlrd'],
         'DBF': ['dbfread'],

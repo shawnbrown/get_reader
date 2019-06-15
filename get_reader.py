@@ -239,9 +239,9 @@ class get_reader(object):
             records = iter(records)
             first_record = next(records, None)
             if first_record:
-                records = chain([first_record], records)
                 fieldnames = list(first_record.keys())
                 yield fieldnames  # Header row.
+                yield list(first_record.values())
 
         for row in records:
             yield [row.get(key, None) for key in fieldnames]

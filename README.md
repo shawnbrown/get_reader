@@ -1,17 +1,54 @@
 get_reader
 ==========
 
-A simple interface for getting reader objects (like those returned from
-`csv.reader()` from various data sources (CSV, XLSX, DBF, etc.).
 
-* Provides two simple interfaces: `get_reader()` and `ReaderLike`
-* Unicode aware text handling
-* Supports Python 3 and 2 with the same interface
-* No hard dependencies---though `xlrd` and `dbfread` are required to
-  load Excel or DBF data from file paths
-* Autodetects file types in many cases
-* Provides accessor methods to use where autodetection is inadequate
-* Apache 2 license
+Get `reader` objects, like those returned by `csv.reader()`, from various
+data sources.
+
+Works on Python 2.6, 2.7, 3.2 through 3.8:
+
+```python
+from get_reader import get_reader
+
+reader = get_reader('myfile.csv')
+for row in reader:
+    print(', '.join(row))
+```
+
+Supports explicit file handling:
+
+```python
+from get_reader import get_reader
+
+with open('myfile.csv', newline='') as csvfile:
+    reader = get_reader(csvfile)
+    for row in reader:
+        print(', '.join(row))
+```
+
+Automatically detects other data sources:
+
+```python
+from get_reader import get_reader
+
+# From an Excel file, requires xlrd
+reader = get_reader('myfile.xlsx')
+
+# From a DataFrame, requires pandas
+df = pandas.DataFrame([...])
+reader = get_reader(df)
+
+# From a DBF file, requires dbfread
+reader = get_reader('myfile.dbf')
+```
+
+Explicit constructors can override auto-detect behavior:
+
+```python
+from get_reader import get_reader
+
+reader = get_reader.from_csv('myfile.txt', delimiter='\t')
+```
 
 
 Install
@@ -23,6 +60,9 @@ your own projects:
 ```shell
 pip install get_reader
 ```
+
+No hard dependencies although `xlrd` and `dbfread` are required for Excel or DBF files; tested on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython; and
+is freely available under the Apache License, version 2.
 
 
 Reference

@@ -161,10 +161,8 @@ class get_reader(object):
         df = pandas.DataFrame([...])
         reader = get_reader(df)
 
-    If the data type cannot be determined automatically, users
-    must call the appropriate handler explicitly (for example
-    :meth:`get_reader.from_csv`, :meth:`get_reader.from_pandas`,
-    etc.).
+    If the *obj* type cannot be determined automatically, you can
+    call one of the "`from_...()`" constructor methods listed below.
     """
     def __new__(cls, obj, *args, **kwds):
         if isinstance(obj, string_types):

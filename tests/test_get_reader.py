@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import collections
-import contextlib
 import csv
+import functools
 import io
 import os
 import sys
@@ -47,18 +47,23 @@ except NameError:
     FileNotFoundError = IOError
 
 
-class working_directory(contextlib.ContextDecorator):
-    def __init__(self, path):
-        if os.path.isfile(path):
-            path = os.path.dirname(path)
-        self._working_dir = os.path.abspath(path)
+def using_relative_directory(func):
+    """Decorator to set the working directory to the same directory
+    where __file__ is located before calling *func* and then reverting
+    back to the original directory afterward.
+    """
+    original_dir = os.path.abspath(os.getcwd())
 
-    def __enter__(self):
-        self._original_dir = os.path.abspath(os.getcwd())
-        os.chdir(self._working_dir)
+    @functools.wraps(func)
+    def wrapper(*args, **kwds):
+        try:
+            os.chdir(os.path.abspath(os.path.dirname(__file__)))
+            result = func(*args, **kwds)
+        finally:
+            os.chdir(original_dir)  # Revert to original directory.
+        return result
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        os.chdir(self._original_dir)
+    return wrapper
 
 
 class TestReader(unittest.TestCase):
@@ -272,7 +277,7 @@ class TestFromCsvIterable(unittest.TestCase):
 
 
 class TestFromCsvPath(unittest.TestCase):
-    @working_directory(__file__)
+    @using_relative_directory
     def test_utf8(self):
         reader = _from_csv_path('sample_text_utf8.csv', encoding='utf-8')
         expected = [
@@ -281,7 +286,7 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @working_directory(__file__)
+    @using_relative_directory
     def test_iso88591(self):
         reader = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1')
 
@@ -291,7 +296,7 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @working_directory(__file__)
+    @using_relative_directory
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
             reader = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8')

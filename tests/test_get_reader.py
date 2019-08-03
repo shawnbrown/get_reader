@@ -66,6 +66,9 @@ class TestReader(unittest.TestCase):
         reader = Reader([])
         self.assertTrue(isinstance(reader, Reader))
 
+        csv_reader = csv.reader([])
+        self.assertTrue(isinstance(csv_reader, Reader))
+
         list_of_strings = [['a', 'x'], ['b', 'y']]  # <- Not a Reader (but is reader-like)
         self.assertFalse(isinstance(list_of_strings, Reader))
 

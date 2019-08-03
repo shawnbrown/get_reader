@@ -5,6 +5,14 @@ import sys
 from itertools import chain
 
 try:
+    from abc import ABC  # New in version 3.4.
+    ABC.__slots__  # New in version 3.7
+except (ImportError, NameError, AttributeError):
+    # Using Python 2 and 3 compatible syntax.
+    from abc import ABCMeta as _ABCMeta
+    ABC = _ABCMeta('ABC', (object,), {'__slots__': ()})
+
+try:
     from collections.abc import Iterable
     from collections.abc import Mapping
 except ImportError:
@@ -139,7 +147,7 @@ else:
                 yield row
 
 
-class Reader(object):
+class Reader(ABC):
     def __init__(self, iterable):
         self.__wrapped__ = iter(iterable)
 
@@ -151,6 +159,14 @@ class Reader(object):
 
     def next(self):
         return next(self.__wrapped__)
+
+    _csvreader_type = type(csv.reader([]))
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        if (cls is Reader) and issubclass(C, cls._csvreader_type):
+            return True
+        return NotImplemented
 
 
 ########################################################################

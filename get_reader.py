@@ -173,7 +173,7 @@ class Reader(ABC):
 # Get Reader.
 ########################################################################
 class get_reader(object):
-    """Return a reader object which will iterate over records in the
+    r"""Return a reader object which will iterate over records in the
     given data---like :py:func:`csv.reader`.
 
     The *obj* type is used to automatically determine the appropriate

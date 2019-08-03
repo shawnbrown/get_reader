@@ -2,22 +2,24 @@
 import csv
 import io
 import sys
+from abc import ABCMeta
 from itertools import chain
 
 try:
     from abc import ABC  # New in version 3.4.
     ABC.__slots__  # New in version 3.7
-except (ImportError, NameError, AttributeError):
+except (ImportError, AttributeError):
     # Using Python 2 and 3 compatible syntax.
-    from abc import ABCMeta as _ABCMeta
-    ABC = _ABCMeta('ABC', (object,), {'__slots__': ()})
+    ABC = ABCMeta('ABC', (object,), {'__slots__': ()})
 
 try:
     from collections.abc import Iterable
     from collections.abc import Mapping
+    from collections.abc import Sequence
 except ImportError:
     from collections import Iterable
     from collections import Mapping
+    from collections import Sequence
 
 
 __version__ = '0.0.1'
@@ -167,6 +169,30 @@ class Reader(ABC):
         if (cls is Reader) and issubclass(C, cls._csvreader_type):
             return True
         return NotImplemented
+
+
+class ReaderLikeABCMeta(ABCMeta):
+    @classmethod
+    def __instancecheck__(cls, inst):  # <- Only looked up on metaclass.
+        if isinstance(inst, Reader):
+            return True
+
+        if not isinstance(inst, Iterable):
+            return False
+
+        not_iterator = iter(inst) is not iter(inst)
+        if not_iterator:
+            first_item = next(iter(inst))
+            return isinstance(first_item, Sequence) \
+                and not isinstance(first_item, string_types)
+        return False
+
+
+class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):
+    def __new__(cls):
+        msg = ("Can't instantiate abstract class "
+               "ReaderLike, use only for type checking")
+        raise TypeError(msg)
 
 
 ########################################################################

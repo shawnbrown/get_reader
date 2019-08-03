@@ -32,6 +32,7 @@ except ImportError:
     dbfread = None
 
 from get_reader import Reader
+from get_reader import ReaderLike
 from get_reader import get_reader
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
@@ -79,6 +80,38 @@ class TestReader(unittest.TestCase):
 
         list_of_strings = [['a', 'x'], ['b', 'y']]  # <- Not a Reader (but is reader-like)
         self.assertFalse(isinstance(list_of_strings, Reader))
+
+
+class TestReaderLike(unittest.TestCase):
+    def test_instantiation(self):
+        msg = 'should not instantiate, used only for type-checking'
+        with self.assertRaises(TypeError, msg=msg):
+            inst = ReaderLike()
+
+    def test_reader_objects(self):
+        """Reader objects should test as ReaderLike."""
+        reader = Reader([])
+        self.assertTrue(isinstance(reader, ReaderLike))
+
+        csv_reader = csv.reader([])
+        self.assertTrue(isinstance(csv_reader, ReaderLike))
+
+    def test_reader_like_objects(self):
+        """Non-consumable iterables that contain non-string sequences
+        should test as ReaderLike.
+        """
+        list_of_lists = [['a', 'b'], ['c', 'd']]
+        self.assertTrue(isinstance(list_of_lists, ReaderLike))
+
+        tuple_of_tuples = (('a', 'b'), ('c', 'd'))
+        self.assertTrue(isinstance(tuple_of_tuples, ReaderLike))
+
+    def test_non_reader_like_objects(self):
+        list_of_strings = ['a', 'c']
+        self.assertFalse(isinstance(list_of_strings, ReaderLike))
+
+        non_iterable = 123
+        self.assertFalse(isinstance(non_iterable, ReaderLike))
 
 
 class TestFromDicts(unittest.TestCase):

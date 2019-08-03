@@ -139,6 +139,20 @@ else:
                 yield row
 
 
+class Reader(object):
+    def __init__(self, iterable):
+        self.__wrapped__ = iter(iterable)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self.__wrapped__)
+
+    def next(self):
+        return next(self.__wrapped__)
+
+
 ########################################################################
 # Get Reader.
 ########################################################################

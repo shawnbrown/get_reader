@@ -28,6 +28,7 @@ try:
 except ImportError:
     dbfread = None
 
+from get_reader import Reader
 from get_reader import get_reader
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
@@ -58,6 +59,15 @@ class working_directory(contextlib.ContextDecorator):
 
     def __exit__(self, exc_type, exc_value, traceback):
         os.chdir(self._original_dir)
+
+
+class TestReader(unittest.TestCase):
+    def test_isinstance(self):
+        reader = Reader([])
+        self.assertTrue(isinstance(reader, Reader))
+
+        list_of_strings = [['a', 'x'], ['b', 'y']]  # <- Not a Reader (but is reader-like)
+        self.assertFalse(isinstance(list_of_strings, Reader))
 
 
 class TestFromDicts(unittest.TestCase):

@@ -3,7 +3,10 @@ import csv
 import io
 import sys
 from abc import ABCMeta
-from itertools import chain
+from itertools import (
+    chain,
+    islice,
+)
 
 try:
     from abc import ABC  # New in version 3.4.
@@ -174,18 +177,20 @@ class Reader(ABC):
 class ReaderLikeABCMeta(ABCMeta):
     @classmethod
     def __instancecheck__(cls, inst):  # <- Only looked up on metaclass.
-        if isinstance(inst, Reader):
+        if isinstance(inst, Reader):  # Any Reader is considered ReaderLike.
             return True
 
-        if not isinstance(inst, Iterable):
+        if not isinstance(inst, Iterable):  # Must be iterable.
             return False
 
-        not_iterator = iter(inst) is not iter(inst)
-        if not_iterator:
-            first_item = next(iter(inst))
-            return isinstance(first_item, Sequence) \
-                and not isinstance(first_item, string_types)
-        return False
+        if iter(inst) is iter(inst):  # Must not be exhaustible.
+            return False
+
+        rows_to_check = 2                            # Must contain
+        for x in islice(iter(inst), rows_to_check):  # non-string sequences.
+            if (not isinstance(x, Sequence)) or isinstance(x, string_types):
+                return False
+        return True
 
 
 class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):

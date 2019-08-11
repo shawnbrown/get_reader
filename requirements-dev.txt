@@ -1,5 +1,6 @@
 # Requirements for Developers
 
+unittest2;python_version<"2.7"
 datatest
 dbfread
 pandas

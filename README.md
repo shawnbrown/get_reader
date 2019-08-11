@@ -1,11 +1,10 @@
 get_reader
 ==========
 
-
 Get `reader` objects, like those returned by `csv.reader()`, from various
 data sources.
 
-Works on Python 2.6, 2.7, 3.2 through 3.8:
+Works on Python 3.8 through 3.2, 2.7, and 2.6:
 
 ```python
 from get_reader import get_reader
@@ -26,27 +25,28 @@ with open('myfile.csv', newline='') as csvfile:
         print(', '.join(row))
 ```
 
-Automatically detects other data sources:
+Automatically detects other data sources if supporting packages are installed:
 
 ```python
 from get_reader import get_reader
 
-# From an Excel file, requires xlrd
-reader = get_reader('myfile.xlsx')
+# From an Excel file
+reader = get_reader('myfile.xlsx')  # requires xlrd package
 
-# From a DataFrame, requires pandas
-df = pandas.DataFrame([...])
-reader = get_reader(df)
+# From a DataFrame
+df = pd.DataFrame([...])
+reader = get_reader(df)  # requires pandas
 
-# From a DBF file, requires dbfread
-reader = get_reader('myfile.dbf')
+# From a DBF file
+reader = get_reader('myfile.dbf')  # requires dbfread package
 ```
 
-Explicit constructors can override auto-detect behavior:
+Explicit constructors can be called directly to override auto-detect behavior:
 
 ```python
 from get_reader import get_reader
 
+# From a tab-delimited text file
 reader = get_reader.from_csv('myfile.txt', delimiter='\t')
 ```
 
@@ -61,8 +61,9 @@ your own projects:
 pip install get_reader
 ```
 
-No hard dependencies although `xlrd` and `dbfread` are required for Excel or DBF files; tested on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython; and
-is freely available under the Apache License, version 2.
+No hard dependencies, although `xlrd` and `dbfread` are required for Excel
+or DBF files; tested on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and
+Jython; and is freely available under the Apache License, version 2.
 
 
 Reference
@@ -114,6 +115,15 @@ call one of the "`from_...()`" constructor methods listed below.
 > from get_reader import get_reader
 > reader = get_reader.from_csv('myfile.tab', delimiter='\t')
 > ```
+>
+> Using explicit file handling:
+>
+> ```python
+> from get_reader import get_reader
+>
+> with open('myfile.csv') as csvfile:
+>     reader = get_reader.from_csv(fh)
+> ```
 
 
 > **from\_dicts**(*records*, *fieldnames*=None)
@@ -132,9 +142,9 @@ call one of the "`from_...()`" constructor methods listed below.
 > reader = get_reader.from_dicts(dictrows)
 > ```
 >
-> This method assumes that record contents are consistent. If the first record
-> is a dictionary, it is assumed that all following records will be dictionaries
-> with matching keys.
+> This method assumes that record contents are consistent. If the first
+> record is a dictionary, it is assumed that all following records will
+> be dictionaries with matching keys.
 
 
 > **from\_excel**(*path*, *worksheet*=0)
@@ -163,14 +173,14 @@ call one of the "`from_...()`" constructor methods listed below.
 >
 > Return a reader object which will iterate over records in
 > the `pandas.DataFrame` *df*.
->
->
+
+
 > **from\_dbf**(*filename*, *encoding*=None, \*\**kwds*)
 >
 > Return a reader object which will iterate over lines in the given
 > DBF file (from dBase, FoxPro, etc.).
->
->
+
+
 > **from\_squint**(*obj*, *fieldnames*=None)
 >
 > Return a reader object which will iterate over the records returned from

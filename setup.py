@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import ast
 import os
 import setuptools
 
@@ -7,10 +8,9 @@ import setuptools
 WORKING_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_version():
-    """Return __version__ from get_reader.py file."""
-    fullpath = os.path.join(WORKING_DIR, 'get_reader.py')
-    with open(fullpath) as fh:
+def get_version(filename):
+    """Return __version__ from *filename*."""
+    with open(os.path.join(WORKING_DIR, filename)) as fh:
         for line in fh:
             line = line.strip()
             if line.startswith('__version__'):
@@ -18,17 +18,16 @@ def get_version():
     raise Exception('Unable to find __version__ attribute.')
 
 
-def get_long_description():
-    """Return entire contents of README file."""
-    with open(os.path.join(WORKING_DIR, 'README.md') as f:
-        long_description = f.read()
-    return long_description
+def get_long_description(filename):
+    """Return entire contents of *filename*."""
+    with open(os.path.join(WORKING_DIR, filename)) as fh:
+        return fh.read()
 
 
 setuptools.setup(
     # Required fields:
     name='get_reader',
-    version=get_version(),
+    version=get_version('get_reader.py'),
     description='Simple interface to get reader-like objects for Python 3 and 2.',
     packages=setuptools.find_packages(),
 
@@ -42,8 +41,8 @@ setuptools.setup(
     extras_require={
         'Excel': ['xlrd'],
         'DBF': ['dbfread'],
-    }
-    long_description=get_long_description(),
+    },
+    long_description=get_long_description('README.md'),
     long_description_content_type='text/markdown',
     license='Apache 2.0',
     classifiers  = [

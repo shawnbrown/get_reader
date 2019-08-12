@@ -39,8 +39,8 @@ setuptools.setup(
     # Optional fields:
     install_requires=[],  # <- No hard requirements!
     extras_require={
-        'Excel': ['xlrd'],
-        'DBF': ['dbfread'],
+        'excel': ['xlrd'],
+        'dbf': ['dbfread'],
     },
     long_description=get_long_description('README.md'),
     long_description_content_type='text/markdown',

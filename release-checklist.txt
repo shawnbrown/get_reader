@@ -1,0 +1,40 @@
+=================
+Release Checklist
+=================
+
+1. Make sure correct version number is set in the get_reader.py file.
+
+2. Update README.md and CHANGELOG files as appropriate.
+
+3. Commit and push final changes to upstream repository:
+
+     Prepare version info, CHANGELOG, and README for version X.X.X release.
+
+4. Perform final checks to make sure there are no test failures.
+
+5. Remove all existing files in the dist/ folder.
+
+6. Build new distributions:
+
+   python setup.py sdist bdist_wheel
+
+7. Upload source and wheel distributions to PyPI:
+
+   twine upload dist/*
+
+8. Double check PyPI project page and test installation from PyPI.
+
+9. Add version tag to upstream repository (also used by readthedocs.org).
+
+10. Iterate version number in get_reader.py indicating that it is a development
+    version (e.g., X.X.X.dev0) so that "latest" docs aren't confused with the
+    just-published "stable" docs.
+
+    Commit this change with a comment like the one below:
+
+      Iterate version number to differentiate development version
+      from latest release.
+
+11. Publish update announcement to relevant mailing lists:
+
+  python-announce-list@python.org

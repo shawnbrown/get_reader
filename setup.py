@@ -29,7 +29,7 @@ setuptools.setup(
     name='get_reader',
     version=get_version('get_reader.py'),
     description='Simple interface to get reader-like objects for Python 3 and 2.',
-    packages=setuptools.find_packages(),
+    py_modules=['get_reader'],
 
     # Recommended fields:
     url='https://github.com/shawnbrown/get_reader',

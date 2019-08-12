@@ -65,6 +65,12 @@ No hard dependencies, although `xlrd` and `dbfread` are required for Excel
 or DBF files; tested on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and
 Jython; and is freely available under the Apache License, version 2.
 
+To install with optional extras, use the following:
+
+```shell
+pip install get_reader[excel,dbf]
+```
+
 
 Reference
 ---------

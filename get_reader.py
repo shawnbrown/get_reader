@@ -175,8 +175,7 @@ class Reader(ABC):
 
 
 class ReaderLikeABCMeta(ABCMeta):
-    @classmethod
-    def __instancecheck__(cls, inst):  # <- Only looked up on metaclass.
+    def __instancecheck__(self, inst):  # <- Only looked up on metaclass.
         if isinstance(inst, Reader):  # Any Reader is considered ReaderLike.
             return True
 

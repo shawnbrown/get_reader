@@ -26,7 +26,11 @@ install: true
 
 before_script:
   - if [ "$UNITTEST2" == "true" ]; then
-      python -m pip install unittest2;
+      wget https://files.pythonhosted.org/packages/99/a0/41ec4a61afb168cf2d4e2e708f4f070c1cff032a4d288a0985228649fc13/unittest2-0.2.0.tar.gz;
+      tar -vzxf unittest2-0.2.0.tar.gz;
+      cd unittest2-0.2.0;
+      sudo python2.6 setup.py install;
+      cd ..;
     fi
 
 # command to run tests and check installation

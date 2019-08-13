@@ -92,13 +92,13 @@ whose extension determines its content type. Any \**args* and
 *obj* type cannot be determined automatically, you can call one of
 the "`from_x()`" constructor methods directly.
 
-When reading data from a path, a file-like object is created and
-handled implicitly. This underlying file is automatically closed
-when the iterator is exhausted, when the reader is deleted, or—if
-used as a context manager—when exiting the `with` statement. Users
-can explicitly close the underlying file by calling the reader's
-`close()` method. When reading data from a file-like object, the
-user is responsible for properly closing the file.
+When *obj* is a path, a file object is implicitly created and handled
+internally. This underlying file is automatically closed when the
+iterator is exhausted, when the reader is deleted, or—if used as a
+context manager—when exiting the `with` statement. Users can explicitly
+close the underlying file by calling the reader's `close()` method.
+However, when the given *obj* is a file-like object (rather than a
+path), users are responsible for properly closing the file themselves.
 
 Using auto-detection:
 

@@ -17,10 +17,17 @@ matrix:
     - python: 2.6
       dist: trusty
       sudo: true
+      env:
+        - UNITTEST2=true
     - python: pypy3
     - python: pypy
 
 install: true
+
+before_script:
+  - if [ "$UNITTEST2" == "true" ]; then
+      python -m pip install unittest2;
+    fi
 
 # command to run tests and check installation
 script:

@@ -28,7 +28,7 @@ setuptools.setup(
     # Required fields:
     name='get_reader',
     version=get_version('get_reader.py'),
-    description='Simple interface to get reader-like objects for Python 3 and 2.',
+    description='get_reader() returns csv.reader-like objects for Python 2 and 3',
     py_modules=['get_reader'],
 
     # Recommended fields:

@@ -1,0 +1,29 @@
+language: python
+
+matrix:
+  include:
+    - python: 3.8-dev
+    - python: 3.7
+    - python: 3.6
+    - python: 3.5
+    - python: 3.4
+    - python: 3.3
+      dist: trusty
+      sudo: true
+    - python: 3.2
+      dist: trusty
+      sudo: true
+    - python: 2.7
+    - python: 2.6
+      dist: trusty
+      sudo: true
+    - python: pypy3
+    - python: pypy
+
+install: true
+
+# command to run tests and check installation
+script:
+  - python run-tests.py
+  - python -c 'import setuptools;print(setuptools.__version__)'
+  - python setup.py install

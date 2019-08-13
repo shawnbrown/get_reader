@@ -10,6 +10,7 @@ Works on Python 3.8 through 3.2, 2.7, and 2.6:
 from get_reader import get_reader
 
 reader = get_reader('myfile.csv')
+
 for row in reader:
     print(', '.join(row))
 ```
@@ -89,6 +90,7 @@ Using auto-detection:
 
 ```python
 from get_reader import get_reader
+...
 
 # CSV file.
 reader = get_reader('myfile.csv')
@@ -119,6 +121,7 @@ call one of the "`from_...()`" constructor methods listed below.
 >
 > ```python
 > from get_reader import get_reader
+>
 > reader = get_reader.from_csv('myfile.tab', delimiter='\t')
 > ```
 >
@@ -128,6 +131,7 @@ call one of the "`from_...()`" constructor methods listed below.
 > from get_reader import get_reader
 >
 > with open('myfile.csv') as csvfile:
+>
 >     reader = get_reader.from_csv(fh)
 > ```
 
@@ -145,6 +149,7 @@ call one of the "`from_...()`" constructor methods listed below.
 >     {'A': 1, 'B': 'x'},
 >     {'A': 2, 'B': 'y'},
 > ]
+>
 > reader = get_reader.from_dicts(dictrows)
 > ```
 >
@@ -164,6 +169,7 @@ call one of the "`from_...()`" constructor methods listed below.
 >
 > ```python
 > from get_reader import get_reader
+>
 > reader = get_reader.from_excel('mydata.xlsx')
 > ```
 >

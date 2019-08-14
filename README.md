@@ -1,6 +1,8 @@
 get_reader
 ==========
 
+![devstatus]&#32;[![build-img]][build-url] ![pyversions] ![license]
+
 Get `reader` objects, like those returned by `csv.reader()`, from
 various data sources.
 
@@ -217,3 +219,10 @@ reader = get_reader('myfile.dbf')
 Freely licensed under the Apache License, Version 2.0
 
 (C) Copyright 2018 – 2019 Shawn Brown.
+
+
+[devstatus]: https://img.shields.io/pypi/status/get_reader.svg
+[build-img]: https://api.travis-ci.org/shawnbrown/get_reader.svg?branch=master
+[build-url]: https://travis-ci.org/shawnbrown/get_reader
+[pyversions]: https://img.shields.io/pypi/pyversions/get_reader.svg
+[license]: https://img.shields.io/badge/license-Apache%202-blue.svg

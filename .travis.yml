@@ -17,21 +17,12 @@ matrix:
     - python: 2.6
       dist: trusty
       sudo: true
-      env:
-        - UNITTEST2=true
+      before_install:
+        - pip install unittest2==0.2.0
     - python: pypy3
     - python: pypy
 
 install: true
-
-before_script:
-  - if [ "$UNITTEST2" == "true" ]; then
-      wget https://files.pythonhosted.org/packages/99/a0/41ec4a61afb168cf2d4e2e708f4f070c1cff032a4d288a0985228649fc13/unittest2-0.2.0.tar.gz;
-      tar -vzxf unittest2-0.2.0.tar.gz;
-      cd unittest2-0.2.0;
-      sudo python setup.py install;
-      cd ..;
-    fi
 
 # command to run tests and check installation
 script:

@@ -101,6 +101,12 @@ class TestReader(unittest.TestCase):
         msg = 'should auto-close when iterator is exhausted'
         self.assertTrue(self.log['is_closed'], msg=msg)
 
+    def test_close_on_context_exit(self):
+        with Reader([['a', 'x'], ['b', 'y']], self.closefunc) as reader:
+            pass
+        msg = 'should auto-close when exiting context manager'
+        self.assertTrue(self.log['is_closed'], msg=msg)
+
 
 class TestReaderLike(unittest.TestCase):
     def test_instantiation(self):

@@ -175,6 +175,12 @@ class Reader(ABC):
     def next(self):
         return self.__next__()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        self.close()
+
     _csvreader_type = type(csv.reader([]))
 
     @classmethod

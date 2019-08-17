@@ -153,8 +153,14 @@ else:
 
 
 class Reader(ABC):
-    def __init__(self, iterable):
+    def __init__(self, iterable, closefunc=None):
         self.__wrapped__ = iter(iterable)
+        self._close = closefunc
+
+    def close(self):
+        if self._close:
+            self._close()
+            self._close = None
 
     def __iter__(self):
         return self

@@ -71,6 +71,14 @@ def using_relative_directory(func):
 
 
 class TestReader(unittest.TestCase):
+    def setUp(self):
+        self.log = {}  # Activity log to record if close() has been called.
+
+        def close():
+            self.log['is_closed'] = True
+
+        self.closefunc = close
+
     def test_isinstance(self):
         reader = Reader([])
         self.assertTrue(isinstance(reader, Reader))
@@ -80,6 +88,11 @@ class TestReader(unittest.TestCase):
 
         list_of_strings = [['a', 'x'], ['b', 'y']]  # <- Not a Reader (but is reader-like)
         self.assertFalse(isinstance(list_of_strings, Reader))
+
+    def test_close_explicitly(self):
+        reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
+        reader.close()
+        self.assertTrue(self.log['is_closed'])
 
 
 class TestReaderLike(unittest.TestCase):

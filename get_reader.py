@@ -185,20 +185,12 @@ class Reader(ABC):
     def __exit__(self, exc_type, exc_value, tb):
         self.close()
 
-    # Type checking.
-
-    _csvreader_type = type(csv.reader([]))
-
-    @classmethod
-    def __subclasshook__(cls, C):
-        if (cls is Reader) and issubclass(C, cls._csvreader_type):
-            return True
-        return NotImplemented
-
 
 class ReaderLikeABCMeta(ABCMeta):
+    _csvreader_type = type(csv.reader([]))
+
     def __instancecheck__(self, inst):  # <- Only looked up on metaclass.
-        if isinstance(inst, Reader):  # Any Reader is considered ReaderLike.
+        if isinstance(inst, (Reader, self._csvreader_type)):
             return True
 
         if not isinstance(inst, Iterable):  # Must be iterable.

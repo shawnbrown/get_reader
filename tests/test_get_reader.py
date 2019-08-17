@@ -79,15 +79,17 @@ class TestReader(unittest.TestCase):
 
         self.closefunc = close
 
-    def test_isinstance(self):
+    def test_type_checking(self):
         reader = Reader([])
         self.assertTrue(isinstance(reader, Reader))
 
-        csv_reader = csv.reader([])
-        self.assertTrue(isinstance(csv_reader, Reader))
+        msg = 'not a Reader (though it is ReaderLike)'
 
-        list_of_strings = [['a', 'x'], ['b', 'y']]  # <- Not a Reader (but is reader-like)
-        self.assertFalse(isinstance(list_of_strings, Reader))
+        csv_reader = csv.reader([])
+        self.assertFalse(isinstance(csv_reader, Reader), msg=msg)
+
+        list_of_strings = [['a', 'x'], ['b', 'y']]
+        self.assertFalse(isinstance(list_of_strings, Reader), msg=msg)
 
     def test_iterator(self):
         reader = Reader([['a', 'x'], ['b', 'y']])
@@ -124,13 +126,13 @@ class TestReaderLike(unittest.TestCase):
         reader = Reader([])
         self.assertTrue(isinstance(reader, ReaderLike))
 
-        csv_reader = csv.reader([])
-        self.assertTrue(isinstance(csv_reader, ReaderLike))
-
     def test_reader_like_objects(self):
         """Non-consumable iterables that contain non-string sequences
         should test as ReaderLike.
         """
+        csv_reader = csv.reader([])
+        self.assertTrue(isinstance(csv_reader, ReaderLike))
+
         list_of_lists = [['a', 'b'], ['c', 'd']]
         self.assertTrue(isinstance(list_of_lists, ReaderLike))
 

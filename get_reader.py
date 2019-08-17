@@ -162,6 +162,8 @@ class Reader(ABC):
             self._close()
             self._close = None
 
+    # Iterator protocol.
+
     def __iter__(self):
         return self
 
@@ -172,14 +174,18 @@ class Reader(ABC):
             self.close()
             raise
 
-    def next(self):
+    def next(self):  # Python 2.x support.
         return self.__next__()
+
+    # Context manager protocol (for `with` statement).
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, tb):
         self.close()
+
+    # Type checking.
 
     _csvreader_type = type(csv.reader([]))
 

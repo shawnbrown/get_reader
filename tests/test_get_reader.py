@@ -72,7 +72,7 @@ def using_relative_directory(func):
 
 class TestReader(unittest.TestCase):
     def setUp(self):
-        self.log = {}  # Activity log to record if close() has been called.
+        self.log = {'is_closed': False}  # Record if close() has been called.
 
         def close():
             self.log['is_closed'] = True
@@ -93,6 +93,13 @@ class TestReader(unittest.TestCase):
         reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
         reader.close()
         self.assertTrue(self.log['is_closed'])
+
+    def test_close_on_stopiteration(self):
+        reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
+        for row in reader:
+            pass
+        msg = 'should auto-close when iterator is exhausted'
+        self.assertTrue(self.log['is_closed'], msg=msg)
 
 
 class TestReaderLike(unittest.TestCase):

@@ -166,10 +166,14 @@ class Reader(ABC):
         return self
 
     def __next__(self):
-        return next(self.__wrapped__)
+        try:
+            return next(self.__wrapped__)
+        except StopIteration:
+            self.close()
+            raise
 
     def next(self):
-        return next(self.__wrapped__)
+        return self.__next__()
 
     _csvreader_type = type(csv.reader([]))
 

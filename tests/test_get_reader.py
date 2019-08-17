@@ -89,6 +89,11 @@ class TestReader(unittest.TestCase):
         list_of_strings = [['a', 'x'], ['b', 'y']]  # <- Not a Reader (but is reader-like)
         self.assertFalse(isinstance(list_of_strings, Reader))
 
+    def test_iterator(self):
+        reader = Reader([['a', 'x'], ['b', 'y']])
+        self.assertEqual(next(reader), ['a', 'x'])
+        self.assertEqual(next(reader), ['b', 'y'])
+
     def test_close_explicitly(self):
         reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
         reader.close()

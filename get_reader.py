@@ -250,6 +250,20 @@ def _from_dicts(records, fieldnames=None):
         yield [row.get(key, None) for key in fieldnames]
 
 
+def _from_namedtuples(records):
+    """Takes a container of namedtuple *records* and returns a
+    generator.
+    """
+    records = iter(records)
+    first_record = next(records, None)
+    if first_record:
+        yield first_record._fields  # Header row.
+        yield first_record
+
+    for record in records:
+        yield record
+
+
 #######################################################################
 # Get Reader.
 #######################################################################
@@ -348,17 +362,12 @@ class get_reader(object):
 
     @staticmethod
     def from_namedtuples(records):
-        """Return a reader object which will iterate over the given
-        namedtuple records.
+        """Takes a container of namedtuple *records* and returns a
+        Reader. The first item in the reader will be a header row
+        taken from the first namedtuple's `_fields` property.
         """
-        records = iter(records)
-        first_record = next(records, None)
-        if first_record:
-            yield first_record._fields  # Header row.
-            yield first_record
-
-        for record in records:
-            yield record
+        generator = _from_namedtuples(records)
+        return Reader(generator)
 
     @staticmethod
     def from_datatest(obj, fieldnames=None):

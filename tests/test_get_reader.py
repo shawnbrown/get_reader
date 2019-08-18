@@ -37,6 +37,7 @@ from get_reader import get_reader
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
 from get_reader import _from_dicts
+from get_reader import _from_namedtuples
 
 
 PY2 = sys.version_info[0] == 2
@@ -267,7 +268,7 @@ class TestFromNamedtuples(unittest.TestCase):
             ntup(2, 'b'),
             ntup(3, 'c'),
         ]
-        reader = get_reader.from_namedtuples(records)
+        reader = _from_namedtuples(records)
 
         expected = [
             ('col1', 'col2'),
@@ -279,7 +280,7 @@ class TestFromNamedtuples(unittest.TestCase):
 
     def test_empty_records(self):
         records = []
-        reader = get_reader.from_namedtuples(records)
+        reader = _from_namedtuples(records)
         self.assertEqual(list(records), [])
 
 
@@ -684,6 +685,8 @@ class TestFunctionDispatching(unittest.TestCase):
 
         records = [ntup(1, 'a'), ntup(2, 'b')]
         reader = get_reader(records)
+
+        self.assertIsInstance(reader, Reader)
 
         expected = [('col1', 'col2'), (1, 'a'), (2, 'b')]
         self.assertEqual(list(reader), expected)

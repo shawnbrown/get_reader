@@ -53,6 +53,13 @@ def iterpeek(iterable):
     return first_item, iterable
 
 
+NOVALUE = type(
+    'novalue',
+    (object,),
+    {'__repr__': (lambda x: '<no value>')},
+)()
+
+
 ########################################################################
 # Unicode Aware CSV Handling.
 ########################################################################
@@ -153,13 +160,18 @@ else:
 
 
 class Reader(ABC):
-    def __init__(self, iterable, closefunc=None):
+    def __init__(self, iterable, closefunc=NOVALUE):
         if isinstance(iterable, Reader):
-            self.__wrapped__ = iterable.__wrapped__
-            self._closefunc = closefunc or iterable._closefunc
+            if closefunc is NOVALUE:
+                closefunc = iterable._closefunc
+            iterable = iterable.__wrapped__
         else:
-            self.__wrapped__ = iter(iterable)
-            self._closefunc = closefunc
+            if closefunc is NOVALUE:
+                closefunc = None
+            iterable = iter(iterable)
+
+        self.__wrapped__ = iterable
+        self._closefunc = closefunc
 
     def close(self):
         if self._closefunc:

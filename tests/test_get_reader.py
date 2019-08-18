@@ -116,10 +116,13 @@ class TestReader(unittest.TestCase):
         self.assertIs(reader._closefunc, dummyfunc1)
 
         reader = Reader(reader)  # <- Make using existing reader.
-        self.assertIs(reader._closefunc, dummyfunc1, msg='should inherit closefunc from existing Reader')
+        self.assertIs(reader._closefunc, dummyfunc1, msg='inherit closefunc from existing Reader')
 
-        reader = Reader(reader, dummyfunc2)  # <- Override inheritance.
-        self.assertIs(reader._closefunc, dummyfunc2, msg='specified closefunc should override inherited value')
+        reader = Reader(reader, dummyfunc2)  # <- Override inheritance with new func.
+        self.assertIs(reader._closefunc, dummyfunc2, msg='specified closefunc overrides inherited value')
+
+        reader = Reader(reader, None)  # <- Override inheritance with None.
+        self.assertIsNone(reader._closefunc, msg='remove inherited closefunc with None')
 
     def test_type_checking(self):
         reader = Reader([])

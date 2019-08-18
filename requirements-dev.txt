@@ -1,4 +1,9 @@
 # Requirements for Developers
+#
+# Install with:
+#
+#     pip install -r requirements-dev.txt
+#
 
 unittest2;python_version<"2.7"
 datatest

@@ -156,15 +156,15 @@ class Reader(ABC):
     def __init__(self, iterable, closefunc=None):
         if isinstance(iterable, Reader):
             self.__wrapped__ = iterable.__wrapped__
+            self._closefunc = closefunc or iterable._closefunc
         else:
             self.__wrapped__ = iter(iterable)
-
-        self._close = closefunc
+            self._closefunc = closefunc
 
     def close(self):
-        if self._close:
-            self._close()
-            self._close = None
+        if self._closefunc:
+            self._closefunc()
+            self._closefunc = None
 
     # Iterator protocol.
 

@@ -104,6 +104,23 @@ class TestReader(unittest.TestCase):
         self.assertIsNot(reader.__wrapped__, reader_obj, msg=msg)
         self.assertIs(reader.__wrapped__, reader_obj.__wrapped__, msg=msg)
 
+    def test_init_handling_of_closefunc(self):
+        reader = Reader([])
+        self.assertIsNone(reader._closefunc)
+
+        # Dummy closefunc callables for testing.
+        dummyfunc1 = lambda: True
+        dummyfunc2 = lambda: True
+
+        reader = Reader([], dummyfunc1)
+        self.assertIs(reader._closefunc, dummyfunc1)
+
+        reader = Reader(reader)  # <- Make using existing reader.
+        self.assertIs(reader._closefunc, dummyfunc1, msg='should inherit closefunc from existing Reader')
+
+        reader = Reader(reader, dummyfunc2)  # <- Override inheritance.
+        self.assertIs(reader._closefunc, dummyfunc2, msg='specified closefunc should override inherited value')
+
     def test_type_checking(self):
         reader = Reader([])
         self.assertTrue(isinstance(reader, Reader))

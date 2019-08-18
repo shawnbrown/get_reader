@@ -140,12 +140,18 @@ class TestReaderLike(unittest.TestCase):
         tuple_of_tuples = (('a', 'b'), ('c', 'd'))
         self.assertTrue(isinstance(tuple_of_tuples, ReaderLike))
 
-    def test_non_reader_like_objects(self):
+    def test_non_readerlike_objects(self):
+        iterator_of_lists = iter([['a', 'b'], ['c', 'd']])
+        msg = 'consumable iterators must not be altered implicitly'
+        self.assertFalse(isinstance(iterator_of_lists, ReaderLike), msg=msg)
+
         list_of_strings = ['a', 'c']
-        self.assertFalse(isinstance(list_of_strings, ReaderLike))
+        msg = 'must contain non-string records'
+        self.assertFalse(isinstance(list_of_strings, ReaderLike), msg=msg)
 
         non_iterable = 123
-        self.assertFalse(isinstance(non_iterable, ReaderLike))
+        msg = 'cannot be non-iterable'
+        self.assertFalse(isinstance(non_iterable, ReaderLike), msg=msg)
 
 
 class TestFromDicts(unittest.TestCase):

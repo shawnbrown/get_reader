@@ -141,12 +141,20 @@ class TestReaderLike(unittest.TestCase):
         self.assertTrue(isinstance(tuple_of_tuples, ReaderLike))
 
     def test_non_readerlike_objects(self):
+        list_of_sets = [set(['a', 'b']), set(['c', 'd'])]
+        msg = 'must contain sequences, but sets are not sequences'
+        self.assertFalse(isinstance(list_of_sets, ReaderLike), msg=msg)
+
+        list_of_iterators = [iter(['a', 'b']), iter(['c', 'd'])]
+        msg = 'must contain sequences, but iterators are not sequences'
+        self.assertFalse(isinstance(list_of_iterators, ReaderLike), msg=msg)
+
         iterator_of_lists = iter([['a', 'b'], ['c', 'd']])
         msg = 'consumable iterators must not be altered implicitly'
         self.assertFalse(isinstance(iterator_of_lists, ReaderLike), msg=msg)
 
         list_of_strings = ['a', 'c']
-        msg = 'must contain non-string records'
+        msg = 'must contain non-string sequences'
         self.assertFalse(isinstance(list_of_strings, ReaderLike), msg=msg)
 
         non_iterable = 123

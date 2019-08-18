@@ -150,7 +150,7 @@ class TestReaderLike(unittest.TestCase):
         self.assertFalse(isinstance(list_of_iterators, ReaderLike), msg=msg)
 
         iterator_of_lists = iter([['a', 'b'], ['c', 'd']])
-        msg = 'consumable iterators must not be altered implicitly'
+        msg = 'consumable iterators must not be altered via side-effect'
         self.assertFalse(isinstance(iterator_of_lists, ReaderLike), msg=msg)
 
         list_of_strings = ['a', 'c']

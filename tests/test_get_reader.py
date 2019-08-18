@@ -79,6 +79,22 @@ class TestReader(unittest.TestCase):
 
         self.closefunc = close
 
+    def test_iterator_handling(self):
+        msg = '__wrapped__ should be get an iterator'
+        list_obj = []
+        reader = Reader(list_obj)
+        self.assertIsNot(reader.__wrapped__, list_obj, msg=msg)
+
+        msg = 'already-existing iterators should be used as-is'
+        iterator = iter([])
+        reader = Reader(iterator)
+        self.assertIs(reader.__wrapped__, iterator, msg=msg)
+
+        msg = 'csv.reader() objects should be treated the same as other iterators'
+        csvreader_obj = csv.reader([])
+        reader = Reader(csvreader_obj)
+        self.assertIs(reader.__wrapped__, csvreader_obj, msg=msg)
+
     def test_type_checking(self):
         reader = Reader([])
         self.assertTrue(isinstance(reader, Reader))

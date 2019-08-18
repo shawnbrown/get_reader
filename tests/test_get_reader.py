@@ -121,15 +121,16 @@ class TestReaderLike(unittest.TestCase):
         with self.assertRaises(TypeError, msg=msg):
             inst = ReaderLike()
 
-    def test_reader_objects(self):
-        """Reader objects should test as ReaderLike."""
+    def test_readerlike_objects(self):
+        """The following items should test as instances of ReaderLike:
+
+            * Reader instances.
+            * csv.reader() type instances.
+            * Non-consumable iterables containing non-string sequences.
+        """
         reader = Reader([])
         self.assertTrue(isinstance(reader, ReaderLike))
 
-    def test_reader_like_objects(self):
-        """Non-consumable iterables that contain non-string sequences
-        should test as ReaderLike.
-        """
         csv_reader = csv.reader([])
         self.assertTrue(isinstance(csv_reader, ReaderLike))
 

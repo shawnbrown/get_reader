@@ -229,9 +229,30 @@ class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):
         raise TypeError(msg)
 
 
-########################################################################
+
+#######################################################################
+# Data handling functions.
+#######################################################################
+def _from_dicts(records, fieldnames=None):
+    """Takes a container of dict *records* and returns a generator."""
+    if fieldnames:
+        fieldnames = list(fieldnames)  # Needs to be a sequence.
+        yield fieldnames  # Header row.
+    else:
+        records = iter(records)
+        first_record = next(records, None)
+        if first_record:
+            fieldnames = list(first_record.keys())
+            yield fieldnames  # Header row.
+            yield list(first_record.values())
+
+    for row in records:
+        yield [row.get(key, None) for key in fieldnames]
+
+
+#######################################################################
 # Get Reader.
-########################################################################
+#######################################################################
 class get_reader(object):
     r"""Return a reader object which will iterate over records in the
     given data---like :py:func:`csv.reader`.
@@ -318,23 +339,12 @@ class get_reader(object):
 
     @staticmethod
     def from_dicts(records, fieldnames=None):
-        """Return a reader object which will iterate over the given
-        dictionary records. This can be thought of as converting a
-        :py:func:`csv.DictReader` into a plain, non-dictionary reader.
+        """Takes a container of dictionary *records* and returns a
+        Reader. This can be thought of as converting a `csv.DictReader`
+        into a plain, non-dictionary reader.
         """
-        if fieldnames:
-            fieldnames = list(fieldnames)  # Needs to be a sequence.
-            yield fieldnames  # Header row.
-        else:
-            records = iter(records)
-            first_record = next(records, None)
-            if first_record:
-                fieldnames = list(first_record.keys())
-                yield fieldnames  # Header row.
-                yield list(first_record.values())
-
-        for row in records:
-            yield [row.get(key, None) for key in fieldnames]
+        generator = _from_dicts(records, fieldnames=fieldnames)
+        return Reader(generator)
 
     @staticmethod
     def from_namedtuples(records):

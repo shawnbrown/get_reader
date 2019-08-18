@@ -36,6 +36,7 @@ from get_reader import ReaderLike
 from get_reader import get_reader
 from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
+from get_reader import _from_dicts
 
 
 PY2 = sys.version_info[0] == 2
@@ -214,7 +215,7 @@ class TestFromDicts(unittest.TestCase):
             {'col1': 2, 'col2': 'b'},
             {'col1': 3, 'col2': 'c'},
         ]
-        reader = get_reader.from_dicts(records, ['col1', 'col2'])  # <- Using fieldnames!
+        reader = _from_dicts(records, ['col1', 'col2'])  # <- Using fieldnames!
 
         expected = [
             ['col1', 'col2'],
@@ -230,7 +231,7 @@ class TestFromDicts(unittest.TestCase):
             {'col1': 2, 'col2': 'b'},
             {'col1': 3, 'col2': 'c'},
         ]
-        reader = get_reader.from_dicts(records)  # <- No fieldnames supplied.
+        reader = _from_dicts(records)  # <- No fieldnames supplied.
 
         reader = list(reader)
         if reader[0][0] == 'col1':  # Check for key order
@@ -251,10 +252,10 @@ class TestFromDicts(unittest.TestCase):
 
     def test_empty_records(self):
         records = []
-        reader = get_reader.from_dicts(records)
+        reader = _from_dicts(records)
         self.assertEqual(list(records), [])
 
-        reader = get_reader.from_dicts(records, ['col1', 'col2'])
+        reader = _from_dicts(records, ['col1', 'col2'])
         self.assertEqual(list(records), [])
 
 
@@ -669,10 +670,12 @@ class TestFunctionDispatching(unittest.TestCase):
             {'col1': 'second'},
         ]
         reader = get_reader(records)  # <- No fieldnames arg.
+        self.assertIsInstance(reader, Reader)
         expected = [['col1'], ['first'], ['second']]
         self.assertEqual(list(reader), expected)
 
         reader = get_reader(records, ['col1'])  # <- Give fieldnames arg.
+        self.assertIsInstance(reader, Reader)
         expected = [['col1'], ['first'], ['second']]
         self.assertEqual(list(reader), expected)
 

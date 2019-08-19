@@ -36,6 +36,9 @@ except NameError:
     file_types = io.IOBase
 
 
+PY2 = sys.version_info[0] == 2
+
+
 def nonstringiter(obj):
     """Returns True if *obj* is a non-string iterable object."""
     return not isinstance(obj, string_types) and isinstance(obj, Iterable)
@@ -58,105 +61,6 @@ NOVALUE = type(
     (object,),
     {'__repr__': (lambda x: '<no value>')},
 )()
-
-
-########################################################################
-# Unicode Aware CSV Handling.
-########################################################################
-if sys.version_info[0] >= 3:
-
-    def _from_csv_iterable(iterable, encoding, **kwds):
-        return csv.reader(iterable, **kwds)
-        # Above, the *encoding* arg is not used but is included so
-        # that the csv-helper functions have the same signature.
-
-    def _from_csv_path(path, encoding, **kwds):
-        with open(path, 'rt', encoding=encoding, newline='') as f:
-            for row in csv.reader(f, **kwds):
-                yield row
-
-else:
-    import codecs
-
-    class UTF8Recoder(object):
-        """Iterator that reads an encoded stream and reencodes the
-        input to UTF-8.
-
-        This class is adapted from example code in Python 2.7 docs
-        for the csv module.
-        """
-        def __init__(self, f, encoding):
-            if isinstance(f, io.IOBase):
-                stream_reader = codecs.getreader(encoding)
-                self.reader = stream_reader(f)
-            elif isinstance(f, Iterable):
-                self.reader = (row.decode(encoding) for row in f)
-            else:
-                cls_name = f.__class__.__name__
-                raise TypeError('unsupported type {0}'.format(cls_name))
-
-        def __iter__(self):
-            return self
-
-        def next(self):
-            return next(self.reader).encode('utf-8')
-
-
-    class UnicodeReader(object):
-        """A CSV reader which will iterate over lines in the CSV
-        file *f*, which is encoded in the given encoding.
-
-        This class is adapted from example code in Python 2.7 docs
-        for the csv module.
-        """
-        def __init__(self, f, dialect=csv.excel, encoding='utf-8', **kwds):
-            f = UTF8Recoder(f, encoding)
-            self.reader = csv.reader(f, dialect=dialect, **kwds)
-
-        @property
-        def line_num(self):
-            return self.reader.line_num
-
-        @line_num.setter
-        def line_num(self, value):
-            self.reader.line_num = value
-
-        def next(self):
-            row = next(self.reader)
-            return [unicode(s, 'utf-8') for s in row]
-
-        def __iter__(self):
-            return self
-
-    def _from_csv_iterable(iterable, encoding, **kwds):
-        # Check that iterable is expected to return bytes (not strings).
-        if isinstance(iterable, file):
-            using_bytes = 'b' in iterable.mode
-        elif isinstance(iterable, io.IOBase):
-            using_bytes = not isinstance(iterable, io.TextIOBase)
-        else:
-            # If *iterable* is a generic iterator, we just have to
-            # trust that the user knows what they're doing. Because
-            # in Python 2, there's no reliable way to tell the
-            # difference between encoded bytes and decoded strings:
-            #
-            #   >>> b'x' == 'x'
-            #   True
-            #
-            using_bytes = True
-
-        if not using_bytes:
-            msg = ('Python 2 unicode compatibility expects bytes, not '
-                   'strings (did you open the file in binary mode?)')
-            raise TypeError(msg)
-
-        return UnicodeReader(iterable, encoding=encoding, **kwds)
-
-
-    def _from_csv_path(path, encoding, **kwds):
-        with open(path, 'rb') as f:
-            for row in UnicodeReader(f, encoding=encoding, **kwds):
-                yield row
 
 
 class Reader(ABC):
@@ -229,10 +133,83 @@ class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):
         raise TypeError(msg)
 
 
-
 #######################################################################
 # Data handling functions.
 #######################################################################
+
+if PY2:
+
+    import codecs
+
+
+    def _unicode_rows(stream, encoding, dialect='excel', **kwds):
+        """Unicode aware CSV handling for Python 2."""
+        if isinstance(stream, io.IOBase):
+            streamreader_type = codecs.getreader(encoding)
+            decoded_stream = streamreader_type(stream)
+        elif isinstance(stream, Iterable):
+            decoded_stream = (row.decode(encoding) for row in stream)
+        else:
+            cls_name = stream.__class__.__name__
+            raise TypeError('unsupported type {0}'.format(cls_name))
+
+        encoded_utf8 = (x.encode('utf-8') for x in decoded_stream)
+        reader = csv.reader(encoded_utf8, dialect=dialect, **kwds)
+        make_unicode = lambda row: [unicode(s, 'utf-8') for s in row]
+        return (make_unicode(row) for row in reader)
+
+
+    def _from_csv_path(path, encoding, dialect='excel', **kwds):
+        fh = open(path, 'rb')
+        try:
+            generator = _unicode_rows(fh, encoding, dialect=dialect, **kwds)
+        except Exception:
+            fh.close()
+            raise
+        return (generator, fh)
+
+
+    def _from_csv_iterable(iterable, encoding, dialect='excel', **kwds):
+        # Check that iterable is expected to return bytes (not strings).
+        if isinstance(iterable, file):
+            using_bytes = 'b' in iterable.mode
+        elif isinstance(iterable, io.IOBase):
+            using_bytes = not isinstance(iterable, io.TextIOBase)
+        else:
+            using_bytes = True
+            # If *iterable* is a generic iterator, we just have to trust that
+            # the user knows what they're doing. Because in Python 2, there's
+            # no reliable way to tell the difference between encoded bytes and
+            # decoded strings:
+            #
+            #   >>> b'x' == 'x'
+            #   True
+
+        if not using_bytes:
+            msg = ('Python 2 unicode compatibility expects bytes, not '
+                   'strings (did you open the file in binary mode?)')
+            raise TypeError(msg)
+
+        return _unicode_rows(iterable, encoding, dialect=dialect, **kwds)
+
+else:  # Python 3
+
+    def _from_csv_path(path, encoding, dialect='excel', **kwds):
+        fh = open(path, 'rt', encoding=encoding, newline='')
+        try:
+            reader = csv.reader(fh, dialect=dialect, **kwds)
+        except Exception:
+            fh.close()
+            raise
+        return (reader, fh)
+
+
+    def _from_csv_iterable(iterable, encoding, dialect='excel', **kwds):
+        return csv.reader(iterable, dialect=dialect, **kwds)
+        # Above, the *encoding* arg is not used but is included so
+        # that the csv-helper functions have the same signature.
+
+
 def _from_dicts(records, fieldnames=None):
     """Takes a container of dict *records* and returns a generator."""
     if fieldnames:
@@ -338,7 +315,7 @@ class get_reader(object):
         raise TypeError(msg.format(obj))
 
     @staticmethod
-    def from_csv(csvfile, encoding='utf-8', **kwds):
+    def from_csv(csvfile, encoding='utf-8', dialect='excel', **kwds):
         """Return a reader object which will iterate over lines in
         the given *csvfile*. The *csvfile* can be a string (treated
         as a file path) or any object which supports the iterator
@@ -348,8 +325,11 @@ class get_reader(object):
         ``newline=''``.
         """
         if isinstance(csvfile, string_types):
-            return _from_csv_path(csvfile, encoding, **kwds)
-        return _from_csv_iterable(csvfile, encoding, **kwds)
+            reader, fh = _from_csv_path(csvfile, encoding, dialect=dialect, **kwds)
+            return Reader(reader, closefunc=fh.close)
+
+        reader = _from_csv_iterable(csvfile, encoding, dialect=dialect, **kwds)
+        return Reader(reader)
 
     @staticmethod
     def from_dicts(records, fieldnames=None):

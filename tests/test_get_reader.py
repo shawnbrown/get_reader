@@ -410,7 +410,7 @@ class TestFromCsvIterable(unittest.TestCase):
 class TestFromCsvPath(unittest.TestCase):
     @using_relative_directory
     def test_utf8(self):
-        reader = _from_csv_path('sample_text_utf8.csv', encoding='utf-8')
+        reader, _ = _from_csv_path('sample_text_utf8.csv', encoding='utf-8')
         expected = [
             ['col1', 'col2'],
             ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
@@ -419,7 +419,7 @@ class TestFromCsvPath(unittest.TestCase):
 
     @using_relative_directory
     def test_iso88591(self):
-        reader = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1')
+        reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1')
 
         expected = [
             ['col1', 'col2'],
@@ -430,7 +430,7 @@ class TestFromCsvPath(unittest.TestCase):
     @using_relative_directory
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
-            reader = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8')
+            reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8')
             list(reader)  # Trigger evaluation.
 
     def test_file_not_found(self):

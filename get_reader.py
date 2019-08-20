@@ -33,6 +33,13 @@ except AttributeError:
 __version__ = '0.0.2.dev0'
 
 
+__all__ = [
+    'get_reader',
+    'Reader',
+    'ReaderLike',
+]
+
+
 try:
     string_types = basestring
     file_types = (io.IOBase, file)

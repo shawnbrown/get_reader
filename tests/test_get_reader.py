@@ -38,6 +38,8 @@ from get_reader import _from_csv_iterable
 from get_reader import _from_csv_path
 from get_reader import _from_dicts
 from get_reader import _from_namedtuples
+from get_reader import _from_pandas
+from get_reader import _from_datatest
 
 
 PY2 = sys.version_info[0] == 2
@@ -445,94 +447,94 @@ class TestFromDatatest(unittest.TestCase):
 
     def test_query_multicolumn_implicit_fieldnames(self):
         query = self.select(('B', 'A'))
-        reader = get_reader.from_datatest(query)  # <- No fieldnames specified.
+        reader = _from_datatest(query)  # <- No fieldnames specified.
         self.assertEqual(list(reader), [('B', 'A'), (1, 'x'), (2, 'y')])
 
     def test_query_multicolumn_explicit_fieldnames(self):
         query = self.select(['B', 'A'])
-        reader = get_reader.from_datatest(query, fieldnames=['foo', 'bar'])
+        reader = _from_datatest(query, fieldnames=['foo', 'bar'])
         self.assertEqual(list(reader), [['foo', 'bar'], [1, 'x'], [2, 'y']])
 
     def test_query_multicolumn_non_select(self):
         query = datatest.Query.from_object([['x', 1], ['y', 2]])
 
-        reader = get_reader.from_datatest(query)  # <- No fieldnames.
+        reader = _from_datatest(query)  # <- No fieldnames.
         self.assertEqual(list(reader), [['x', 1], ['y', 2]])
 
-        reader = get_reader.from_datatest(query, fieldnames=['foo', 'bar'])
+        reader = _from_datatest(query, fieldnames=['foo', 'bar'])
         self.assertEqual(list(reader), [['foo', 'bar'], ['x', 1], ['y', 2]])
 
     def test_query_singlecolumn_implicit_fieldname(self):
         query = self.select('A')
-        reader = get_reader.from_datatest(query)
+        reader = _from_datatest(query)
         self.assertEqual(list(reader), [('A',), ('x',), ('y',)])
 
     def test_query_singlecolumn_explicit_fieldname(self):
         query = self.select('A')
-        reader = get_reader.from_datatest(query, fieldnames='foo')
+        reader = _from_datatest(query, fieldnames='foo')
         self.assertEqual(list(reader), [('foo',), ('x',), ('y',)])
 
     def test_query_singlecolumn_non_select(self):
         query = datatest.Query.from_object(['x', 'y'])
 
-        reader = get_reader.from_datatest(query)  # <- No fieldnames.
+        reader = _from_datatest(query)  # <- No fieldnames.
         self.assertEqual(list(reader), [('x',), ('y',)])
 
-        reader = get_reader.from_datatest(query, fieldnames='foo')
+        reader = _from_datatest(query, fieldnames='foo')
         self.assertEqual(list(reader), [('foo',), ('x',), ('y',)])
 
     def test_query_summed_single_value(self):
         query = self.select('B').sum()
-        reader = get_reader.from_datatest(query)
+        reader = _from_datatest(query)
         self.assertEqual(list(reader), [('B',), (3,)])
 
     def test_query_dict_single_key_and_value(self):
         query = self.select({'A': 'B'})
-        reader = get_reader.from_datatest(query)
+        reader = _from_datatest(query)
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
 
     def test_query_dict_tuplevalue(self):
         query = self.select({'A': ('A', 'B')})
-        reader = get_reader.from_datatest(query)
+        reader = _from_datatest(query)
         self.assertEqual(list(reader), [('A', 'A', 'B'), ('x', 'x', 1), ('y', 'y', 2)])
 
     def test_query_dict_tuplekey(self):
         query = self.select({('A', 'A'): 'B'})
-        reader = get_reader.from_datatest(query)
+        reader = _from_datatest(query)
         self.assertEqual(list(reader), [('A', 'A', 'B'), ('x', 'x', 1), ('y', 'y', 2)])
 
     def test_query_dict_tuplekey_tuplevalue(self):
         query = self.select({('A', 'A'): ('B', 'B')})
-        reader = get_reader.from_datatest(query)
+        reader = _from_datatest(query)
         self.assertEqual(list(reader), [('A', 'A', 'B', 'B'), ('x', 'x', 1, 1), ('y', 'y', 2, 2)])
 
     def test_select_object(self):
-        reader = get_reader.from_datatest(self.select)  # <- No fieldnames specified.
+        reader = _from_datatest(self.select)  # <- No fieldnames specified.
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
 
-        reader = get_reader.from_datatest(self.select, fieldnames=('foo', 'bar'))
+        reader = _from_datatest(self.select, fieldnames=('foo', 'bar'))
         self.assertEqual(list(reader), [('foo', 'bar'), ('x', 1), ('y', 2)])
 
     def test_result_list(self):
         result = datatest.Result([['x', 1], ['y', 2]], evaluation_type=list)
-        reader = get_reader.from_datatest(result)  # <- No fieldnames specified.
+        reader = _from_datatest(result)  # <- No fieldnames specified.
         self.assertEqual(list(reader), [['x', 1], ['y', 2]])
 
         result = datatest.Result([['x', 1], ['y', 2]], evaluation_type=list)
-        reader = get_reader.from_datatest(result, fieldnames=['foo', 'bar'])
+        reader = _from_datatest(result, fieldnames=['foo', 'bar'])
         self.assertEqual(list(reader), [['foo', 'bar'], ['x', 1], ['y', 2]])
 
     def test_result_dict(self):
         source_dict = {'x': [1, 1], 'y': [2]}
 
         result = datatest.Result(source_dict, evaluation_type=dict)
-        reader = get_reader.from_datatest(result)  # <- No fieldnames specified.
+        reader = _from_datatest(result)  # <- No fieldnames specified.
         reader_list = list(reader)
         self.assertEqual(reader_list.count(('x', 1)), 2)
         self.assertEqual(reader_list.count(('y', 2)), 1)
 
         result = datatest.Result(source_dict, evaluation_type=dict)
-        reader = get_reader.from_datatest(result, fieldnames=('foo', 'bar'))
+        reader = _from_datatest(result, fieldnames=('foo', 'bar'))
         reader_list = list(reader)
         self.assertEqual(reader_list[0], ('foo', 'bar'))
         self.assertEqual(reader_list.count(('x', 1)), 2)
@@ -548,7 +550,7 @@ class TestFromPandas(unittest.TestCase):
         })
 
     def test_automatic_indexing(self):
-        reader = get_reader.from_pandas(self.df)  # <- Includes index by default.
+        reader = _from_pandas(self.df)  # <- Includes index by default.
         expected = [
             [None, 'col1', 'col2'],
             [0, 1, 'a'],
@@ -557,7 +559,7 @@ class TestFromPandas(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-        reader = get_reader.from_pandas(self.df, index=False)  # <- Omits index.
+        reader = _from_pandas(self.df, index=False)  # <- Omits index.
         expected = [
             ['col1', 'col2'],
             [1, 'a'],
@@ -569,7 +571,7 @@ class TestFromPandas(unittest.TestCase):
     def test_simple_index(self):
         self.df.index = pandas.Index(['x', 'y', 'z'], name='col0')
 
-        reader = get_reader.from_pandas(self.df)
+        reader = _from_pandas(self.df)
         expected = [
             ['col0', 'col1', 'col2'],
             ['x', 1, 'a'],
@@ -578,7 +580,7 @@ class TestFromPandas(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-        reader = get_reader.from_pandas(self.df, index=False)
+        reader = _from_pandas(self.df, index=False)
         expected = [
             ['col1', 'col2'],
             [1, 'a'],
@@ -592,7 +594,7 @@ class TestFromPandas(unittest.TestCase):
         index = pandas.MultiIndex.from_tuples(index_values, names=['A', 'B'])
         self.df.index = index
 
-        reader = get_reader.from_pandas(self.df)
+        reader = _from_pandas(self.df)
         expected = [
             ['A', 'B', 'col1', 'col2'],
             ['x', 'one', 1, 'a'],
@@ -601,7 +603,7 @@ class TestFromPandas(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-        reader = get_reader.from_pandas(self.df, index=False)
+        reader = _from_pandas(self.df, index=False)
         expected = [
             ['col1', 'col2'],
             [1, 'a'],

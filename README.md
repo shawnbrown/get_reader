@@ -90,23 +90,27 @@ Reference
 
 **get\_reader**(*obj*, \**args*, \*\**kwds*)
 
-Return a reader object which will iterate over records in the
+Return a Reader object which will iterate over records in the
 given *obj*—like a `csv.reader()`.
 
 The given *obj* is used to automatically determine the appropriate
-file handler. If *obj* is a string, it is treated as a file path
+data handler. If *obj* is a string, it is treated as a file path
 whose extension determines its content type. Any \**args* and
 \*\**kwds* are passed to the appropriate constructor method. If the
 *obj* type cannot be determined automatically, you can call one of
 the "`from_x()`" constructor methods directly.
 
-When *obj* is a path, a file object is implicitly created and handled
-internally. This underlying file is automatically closed when the
-iterator is exhausted, when the reader is deleted, or—if used as a
-context manager—when exiting the `with` statement. Users can explicitly
-close the underlying file by calling the reader's `close()` method.
-However, when the given *obj* is a file-like object (rather than a
-path), users are responsible for properly closing the file themselves.
+When *obj* is a path, the Reader contains a file object that is
+handled internally. Users can close the file by calling the Reader's
+`close()` method. Otherwise this underlying file will be automatically
+closed when:
+
+* its iterator is exhausted
+* the Reader is deleted
+* exiting a `with` statement (if used as a context manager)
+
+When given a file-like *obj* (rather than a path), users are
+responsible for properly closing this file themselves.
 
 Using auto-detection:
 
@@ -129,7 +133,7 @@ reader = get_reader('myfile.dbf')
 ```
 
 
-> **from\_csv**(*csvfile*, *encoding*='utf-8', \*\**kwds*)
+> **from\_csv**(*csvfile*, *encoding*='utf-8', dialect='excel', \*\**kwds*)
 >
 > Return a reader object which will iterate over lines in the
 > given *csvfile*. The *csvfile* can be a string (treated as a

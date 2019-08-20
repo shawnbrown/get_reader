@@ -24,6 +24,11 @@ except ImportError:
     from collections import Mapping
     from collections import Sequence
 
+try:
+    range.__iter__  # New in version 3.0.
+except AttributeError:
+    range = xrange
+
 
 __version__ = '0.0.2.dev0'
 

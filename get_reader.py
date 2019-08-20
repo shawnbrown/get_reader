@@ -321,6 +321,32 @@ def _from_excel(path, worksheet=0):
     return (reader, release_resources)
 
 
+def _from_dbf(filename, encoding, **kwds):
+    """Takes a DBF path and returns a generator."""
+    try:
+        import dbfread
+    except ImportError:
+        raise ImportError(
+            "No module named 'dbfread'\n"
+            "\n"
+            "This is an optional constructor that requires the "
+            "third-party library 'dbfread'."
+        )
+    if 'load' not in kwds:
+        kwds['load'] = False
+
+    def recfactory(record):
+        return [x[1] for x in record]
+
+    kwds['recfactory'] = recfactory
+    table = dbfread.DBF(filename, encoding, **kwds)
+
+    yield table.field_names  # <- Header row.
+
+    for record in table:
+        yield record
+
+
 #######################################################################
 # Get Reader.
 #######################################################################
@@ -489,23 +515,4 @@ class get_reader(object):
             This constructor requires the optional, third-party
             library dbfread.
         """
-        try:
-            import dbfread
-        except ImportError:
-            raise ImportError(
-                "No module named 'dbfread'\n"
-                "\n"
-                "This is an optional constructor that requires the "
-                "third-party library 'dbfread'."
-            )
-        if 'load' not in kwds:
-            kwds['load'] = False
-        def recfactory(record):
-            return [x[1] for x in record]
-        kwds['recfactory'] = recfactory
-        table = dbfread.DBF(filename, encoding, **kwds)
-
-        yield table.field_names  # <- Header row.
-
-        for record in table:
-            yield record
+        return Reader(_from_dbf(filename, encoding=encoding, **kwds))

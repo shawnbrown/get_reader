@@ -41,6 +41,7 @@ from get_reader import _from_namedtuples
 from get_reader import _from_pandas
 from get_reader import _from_datatest
 from get_reader import _from_excel
+from get_reader import _from_dbf
 
 
 PY2 = sys.version_info[0] == 2
@@ -649,7 +650,7 @@ class TestFromDbf(unittest.TestCase):
         dirname = os.path.dirname(__file__)
         filepath = os.path.join(dirname, 'sample_dbase.dbf')
 
-        reader = get_reader.from_dbf(filepath)
+        reader = _from_dbf(filepath, encoding=None)
         expected = [
             ['COL1', 'COL2'],
             ['dBASE', 1],
@@ -787,6 +788,7 @@ class TestFunctionDispatching(unittest.TestCase):
             ['dBASE', 1],
         ]
         self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
     def test_readerlike_wrapping(self):
         """Reader-like lists should simply be wrapped."""

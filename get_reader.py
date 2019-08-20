@@ -298,6 +298,29 @@ def _from_datatest(obj, fieldnames=None):
         yield value
 
 
+def _from_excel(path, worksheet=0):
+    """Takes a Excel path and returns a generator and close method."""
+    try:
+        import xlrd
+    except ImportError:
+        raise ImportError(
+            "No module named 'xlrd'\n"
+            "\n"
+            "This is an optional constructor that requires the "
+            "third-party library 'xlrd'."
+        )
+    book = xlrd.open_workbook(path, on_demand=True)
+
+    if isinstance(worksheet, int):
+        sheet = book.sheet_by_index(worksheet)
+    else:
+        sheet = book.sheet_by_name(worksheet)
+
+    reader = (sheet.row_values(index) for index in range(sheet.nrows))
+    release_resources = book.release_resources
+    return (reader, release_resources)
+
+
 #######################################################################
 # Get Reader.
 #######################################################################
@@ -453,27 +476,8 @@ class get_reader(object):
             This constructor requires the optional, third-party
             library xlrd.
         """
-        try:
-            import xlrd
-        except ImportError:
-            raise ImportError(
-                "No module named 'xlrd'\n"
-                "\n"
-                "This is an optional constructor that requires the "
-                "third-party library 'xlrd'."
-            )
-        book = xlrd.open_workbook(path, on_demand=True)
-        try:
-            if isinstance(worksheet, int):
-                sheet = book.sheet_by_index(worksheet)
-            else:
-                sheet = book.sheet_by_name(worksheet)
-
-            for index in range(sheet.nrows):
-                yield sheet.row_values(index)
-
-        finally:
-            book.release_resources()
+        reader, release_resources = _from_excel(path, worksheet=worksheet)
+        return Reader(reader, closefunc=release_resources)
 
     @staticmethod
     def from_dbf(filename, encoding=None, **kwds):

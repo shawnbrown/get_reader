@@ -40,6 +40,7 @@ from get_reader import _from_dicts
 from get_reader import _from_namedtuples
 from get_reader import _from_pandas
 from get_reader import _from_datatest
+from get_reader import _from_excel
 
 
 PY2 = sys.version_info[0] == 2
@@ -620,7 +621,7 @@ class TestFromExcel(unittest.TestCase):
         self.filepath = os.path.join(dirname, 'sample_multiworksheet.xlsx')
 
     def test_default_worksheet(self):
-        reader = get_reader.from_excel(self.filepath)  # <- Defaults to 1st worksheet.
+        reader, _ = _from_excel(self.filepath)  # <- Defaults to 1st worksheet.
 
         expected = [
             ['col1', 'col2'],
@@ -631,7 +632,7 @@ class TestFromExcel(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     def test_specified_worksheet(self):
-        reader = get_reader.from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
+        reader, _ = _from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
 
         expected = [
             ['col1', 'col2'],
@@ -768,6 +769,7 @@ class TestFunctionDispatching(unittest.TestCase):
             ['excel2007', 1],
         ]
         self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
         reader = get_reader('sample_excel1997.xls')
         expected = [
@@ -775,6 +777,7 @@ class TestFunctionDispatching(unittest.TestCase):
             ['excel1997', 1],
         ]
         self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
     @unittest.skipIf(not dbfread, 'dbfread not found')
     def test_dbf(self):

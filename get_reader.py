@@ -350,7 +350,7 @@ def _from_dbf(filename, encoding, **kwds):
 #######################################################################
 # Get Reader.
 #######################################################################
-class get_reader(object):
+class GetReaderType(object):
     r"""Return a reader object which will iterate over records in the
     given data---like :py:func:`csv.reader`.
 
@@ -372,34 +372,34 @@ class get_reader(object):
     If the *obj* type cannot be determined automatically, you can
     call one of the "`from_...()`" constructor methods listed below.
     """
-    def __new__(cls, obj, *args, **kwds):
+    def __call__(self, obj, *args, **kwds):
         if isinstance(obj, string_types):
             lowercase = obj.lower()
 
             if lowercase.endswith('.csv'):
-                return cls.from_csv(obj, *args, **kwds)
+                return self.from_csv(obj, *args, **kwds)
 
             if lowercase.endswith('.xlsx') or lowercase.endswith('.xls'):
-                return cls.from_excel(obj, *args, **kwds)
+                return self.from_excel(obj, *args, **kwds)
 
             if lowercase.endswith('.dbf'):
-                return cls.from_dbf(obj, *args, **kwds)
+                return self.from_dbf(obj, *args, **kwds)
 
         else:
             if isinstance(obj, file_types) \
                     and getattr(obj, 'name', '').lower().endswith('.csv'):
-                return cls.from_csv(obj, *args, **kwds)
+                return self.from_csv(obj, *args, **kwds)
 
             if 'datatest' in sys.modules:
                 datatest = sys.modules['datatest']
                 if isinstance(obj, (datatest.Query,
                                     datatest.Select,
                                     datatest.Result)):
-                    return cls.from_datatest(obj, *args, **kwds)
+                    return self.from_datatest(obj, *args, **kwds)
 
             if 'pandas' in sys.modules:
                 if isinstance(obj, sys.modules['pandas'].DataFrame):
-                    return cls.from_pandas(obj, *args, **kwds)
+                    return self.from_pandas(obj, *args, **kwds)
 
             if isinstance(obj, Iterable):
                 iterator = iter(obj)
@@ -407,10 +407,10 @@ class get_reader(object):
                 iterator = chain([first_value], iterator)
 
                 if isinstance(first_value, dict):
-                    return cls.from_dicts(iterator, *args, **kwds)
+                    return self.from_dicts(iterator, *args, **kwds)
 
                 if hasattr(first_value, '_fields'):
-                    return cls.from_namedtuples(iterator, *args, **kwds)
+                    return self.from_namedtuples(iterator, *args, **kwds)
 
                 if isinstance(first_value, (list, tuple)):
                     return iterator  # Already seems reader-like.
@@ -420,8 +420,7 @@ class get_reader(object):
                'get_reader.from_pandas(...), etc.')
         raise TypeError(msg.format(obj))
 
-    @staticmethod
-    def from_csv(csvfile, encoding='utf-8', dialect='excel', **kwds):
+    def from_csv(self, csvfile, encoding='utf-8', dialect='excel', **kwds):
         """Return a reader object which will iterate over lines in
         the given *csvfile*. The *csvfile* can be a string (treated
         as a file path) or any object which supports the iterator
@@ -437,8 +436,7 @@ class get_reader(object):
         reader = _from_csv_iterable(csvfile, encoding, dialect=dialect, **kwds)
         return Reader(reader)
 
-    @staticmethod
-    def from_dicts(records, fieldnames=None):
+    def from_dicts(self, records, fieldnames=None):
         """Takes a container of dictionary *records* and returns a
         Reader. This can be thought of as converting a `csv.DictReader`
         into a plain, non-dictionary reader.
@@ -446,8 +444,7 @@ class get_reader(object):
         generator = _from_dicts(records, fieldnames=fieldnames)
         return Reader(generator)
 
-    @staticmethod
-    def from_namedtuples(records):
+    def from_namedtuples(self, records):
         """Takes a container of namedtuple *records* and returns a
         Reader. The first item in the reader will be a header row
         taken from the first namedtuple's `_fields` property.
@@ -455,8 +452,7 @@ class get_reader(object):
         generator = _from_namedtuples(records)
         return Reader(generator)
 
-    @staticmethod
-    def from_pandas(df, index=True):
+    def from_pandas(self, df, index=True):
         """Return a reader object which will iterate over records in
         the pandas.DataFrame *df*.
 
@@ -467,8 +463,7 @@ class get_reader(object):
         """
         return Reader(_from_pandas(df, index=index))
 
-    @staticmethod
-    def from_datatest(obj, fieldnames=None):
+    def from_datatest(self, obj, fieldnames=None):
         """Return a reader object which will iterate over the records
         returned from a datatest Select, Query, or Result. If the
         *fieldnames* argument is not provided, this function tries to
@@ -481,8 +476,7 @@ class get_reader(object):
         """
         return Reader(_from_datatest(obj, fieldnames=fieldnames))
 
-    @staticmethod
-    def from_excel(path, worksheet=0):
+    def from_excel(self, path, worksheet=0):
         """Return a reader object which will iterate over lines in the
         given Excel worksheet. *path* must specify to an XLSX or XLS
         file and *worksheet* should specify the index or name of the
@@ -505,8 +499,7 @@ class get_reader(object):
         reader, release_resources = _from_excel(path, worksheet=worksheet)
         return Reader(reader, closefunc=release_resources)
 
-    @staticmethod
-    def from_dbf(filename, encoding=None, **kwds):
+    def from_dbf(self, filename, encoding=None, **kwds):
         """Return a reader object which will iterate over lines in the
         given DBF file (from dBase, FoxPro, etc.).
 
@@ -516,3 +509,6 @@ class get_reader(object):
             library dbfread.
         """
         return Reader(_from_dbf(filename, encoding=encoding, **kwds))
+
+
+get_reader = GetReaderType()

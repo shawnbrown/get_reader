@@ -253,6 +253,46 @@ def _from_pandas(df, index=True):
         yield list(record)
 
 
+def _from_datatest(obj, fieldnames=None):
+    """Takes a Select, Query, or Result and returns a generator."""
+    datatest = sys.modules['datatest']
+    if isinstance(obj, datatest.Query):
+        query = obj
+    elif isinstance(obj, datatest.Select):
+        query = obj(tuple(obj.fieldnames))
+    elif isinstance(obj, datatest.Result):
+        query = datatest.Query.from_object(obj)
+    else:
+        raise TypeError('must be datatest Select, Query, or Result')
+
+    iterable = query.flatten().execute()
+    if not nonstringiter(iterable):
+        iterable = [(iterable,)]
+
+    first_row, iterable = iterpeek(iterable)
+    if not nonstringiter(first_row):
+        first_row = (first_row,)
+        iterable = ((x,) for x in iterable)
+
+    if fieldnames:
+        if not nonstringiter(fieldnames):
+            fieldnames = (fieldnames,)
+    else:
+        if query.args:
+            fieldnames = query.__class__.from_object(query.args[0])
+            (fieldnames,) = fieldnames.flatten().fetch()
+            if not nonstringiter(fieldnames):
+                fieldnames = (fieldnames,)
+            if len(first_row) != len(fieldnames):
+                fieldnames = None
+
+    if fieldnames:
+        yield fieldnames
+
+    for value in iterable:
+        yield value
+
+
 #######################################################################
 # Get Reader.
 #######################################################################
@@ -385,42 +425,7 @@ class get_reader(object):
             This constructor requires the optional, third-party
             library datatest.
         """
-        datatest = sys.modules['datatest']
-        if isinstance(obj, datatest.Query):
-            query = obj
-        elif isinstance(obj, datatest.Select):
-            query = obj(tuple(obj.fieldnames))
-        elif isinstance(obj, datatest.Result):
-            query = datatest.Query.from_object(obj)
-        else:
-            raise TypeError('must be datatest Select, Query, or Result')
-
-        iterable = query.flatten().execute()
-        if not nonstringiter(iterable):
-            iterable = [(iterable,)]
-
-        first_row, iterable = iterpeek(iterable)
-        if not nonstringiter(first_row):
-            first_row = (first_row,)
-            iterable = ((x,) for x in iterable)
-
-        if fieldnames:
-            if not nonstringiter(fieldnames):
-                fieldnames = (fieldnames,)
-        else:
-            if query.args:
-                fieldnames = query.__class__.from_object(query.args[0])
-                (fieldnames,) = fieldnames.flatten().fetch()
-                if not nonstringiter(fieldnames):
-                    fieldnames = (fieldnames,)
-                if len(first_row) != len(fieldnames):
-                    fieldnames = None
-
-        if fieldnames:
-            yield fieldnames
-
-        for value in iterable:
-            yield value
+        return Reader(_from_datatest(obj, fieldnames=fieldnames))
 
     @staticmethod
     def from_excel(path, worksheet=0):

@@ -748,13 +748,16 @@ class TestFunctionDispatching(unittest.TestCase):
         query = select(('A', 'B'))
         reader = get_reader(query)  # <- datatest.Query
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
+        self.assertIsInstance(reader, Reader)
 
         reader = get_reader(select)  # <- datatest.Select
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
+        self.assertIsInstance(reader, Reader)
 
         result = select({'A': 'B'}).execute()
         reader = get_reader(query)  # <- datatest.Result
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
+        self.assertIsInstance(reader, Reader)
 
     @unittest.skipIf(not xlrd, 'xlrd not found')
     def test_excel(self):

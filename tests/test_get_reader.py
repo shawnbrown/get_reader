@@ -152,6 +152,12 @@ class TestReader(unittest.TestCase):
         reader.close()
         self.assertTrue(self.log['is_closed'])
 
+    def test_close_repeated(self):
+        reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
+        reader.close()
+        reader.close()  # <- Already closed, should pass without error.
+        self.assertTrue(self.log['is_closed'])
+
     def test_close_on_stopiteration(self):
         reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
         for row in reader:

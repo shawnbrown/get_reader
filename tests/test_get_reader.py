@@ -672,6 +672,7 @@ class TestFunctionDispatching(unittest.TestCase):
             ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
         ]
         self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
         reader = get_reader('sample_text_iso88591.csv', encoding='iso8859-1')
         expected = [
@@ -679,6 +680,7 @@ class TestFunctionDispatching(unittest.TestCase):
             ['iso88591', chr(0xe6)],  # chr(0xe6) -> æ
         ]
         self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
         path = 'sample_text_utf8.csv'
         encoding = 'utf-8'
@@ -695,6 +697,7 @@ class TestFunctionDispatching(unittest.TestCase):
                 ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
             ]
             self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
     def test_dicts(self):
         records = [

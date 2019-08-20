@@ -665,32 +665,6 @@ class TestFunctionDispatching(unittest.TestCase):
             os.chdir(self._orig_dir)
         self.addCleanup(restore_dir)
 
-    def test_dicts(self):
-        records = [
-            {'col1': 'first'},
-            {'col1': 'second'},
-        ]
-        reader = get_reader(records)  # <- No fieldnames arg.
-        self.assertIsInstance(reader, Reader)
-        expected = [['col1'], ['first'], ['second']]
-        self.assertEqual(list(reader), expected)
-
-        reader = get_reader(records, ['col1'])  # <- Give fieldnames arg.
-        self.assertIsInstance(reader, Reader)
-        expected = [['col1'], ['first'], ['second']]
-        self.assertEqual(list(reader), expected)
-
-    def test_namedtuples(self):
-        ntup = collections.namedtuple('ntup', ['col1', 'col2'])
-
-        records = [ntup(1, 'a'), ntup(2, 'b')]
-        reader = get_reader(records)
-
-        self.assertIsInstance(reader, Reader)
-
-        expected = [('col1', 'col2'), (1, 'a'), (2, 'b')]
-        self.assertEqual(list(reader), expected)
-
     def test_csv(self):
         reader = get_reader('sample_text_utf8.csv', encoding='utf-8')
         expected = [
@@ -722,6 +696,48 @@ class TestFunctionDispatching(unittest.TestCase):
             ]
             self.assertEqual(list(reader), expected)
 
+    def test_dicts(self):
+        records = [
+            {'col1': 'first'},
+            {'col1': 'second'},
+        ]
+        reader = get_reader(records)  # <- No fieldnames arg.
+        self.assertIsInstance(reader, Reader)
+        expected = [['col1'], ['first'], ['second']]
+        self.assertEqual(list(reader), expected)
+
+        reader = get_reader(records, ['col1'])  # <- Give fieldnames arg.
+        self.assertIsInstance(reader, Reader)
+        expected = [['col1'], ['first'], ['second']]
+        self.assertEqual(list(reader), expected)
+
+    def test_namedtuples(self):
+        ntup = collections.namedtuple('ntup', ['col1', 'col2'])
+
+        records = [ntup(1, 'a'), ntup(2, 'b')]
+        reader = get_reader(records)
+
+        self.assertIsInstance(reader, Reader)
+
+        expected = [('col1', 'col2'), (1, 'a'), (2, 'b')]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skipIf(not pandas, 'pandas not found')
+    def test_pandas(self):
+        df = pandas.DataFrame({
+            'col1': (1, 2, 3),
+            'col2': ('a', 'b', 'c'),
+        })
+        reader = get_reader(df, index=False)
+        expected = [
+            ['col1', 'col2'],
+            [1, 'a'],
+            [2, 'b'],
+            [3, 'c'],
+        ]
+        self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
+
     @unittest.skipIf(not datatest, 'datatest not found')
     def test_datatest(self):
         select = datatest.Select([['A', 'B'], ['x', 1], ['y', 2]])
@@ -752,22 +768,6 @@ class TestFunctionDispatching(unittest.TestCase):
             ['excel1997', 1],
         ]
         self.assertEqual(list(reader), expected)
-
-    @unittest.skipIf(not pandas, 'pandas not found')
-    def test_pandas(self):
-        df = pandas.DataFrame({
-            'col1': (1, 2, 3),
-            'col2': ('a', 'b', 'c'),
-        })
-        reader = get_reader(df, index=False)
-        expected = [
-            ['col1', 'col2'],
-            [1, 'a'],
-            [2, 'b'],
-            [3, 'c'],
-        ]
-        self.assertEqual(list(reader), expected)
-        self.assertIsInstance(reader, Reader)
 
     @unittest.skipIf(not dbfread, 'dbfread not found')
     def test_dbf(self):

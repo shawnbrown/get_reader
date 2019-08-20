@@ -3,10 +3,10 @@ get_reader
 
 ![devstatus]&#32;[![build-img]][build-url] ![pyversions] ![license]
 
-Get `reader` objects, like those returned by `csv.reader()`, from
-various data sources.
+This module provides a `get_reader()` function that returns reader
+objects similar to those returned by `csv.reader()`.
 
-The same syntax works on both Python 2.x and 3.x:
+Open a UTF-8 encoded CSV file in Python 2 or 3:
 
 ```python
 from get_reader import get_reader
@@ -17,43 +17,49 @@ for row in reader:
     print(', '.join(row))
 ```
 
-Supports explicit file handling:
+Open a Latin-1 (ISO-8859-1) encoded CSV file in Python 2 or 3:
 
 ```python
 from get_reader import get_reader
 
-with open('myfile.csv', newline='') as csvfile:
+reader = get_reader('myfile.csv', encoding='latin-1')
 
-    reader = get_reader(csvfile)
+for row in reader:
+    print(', '.join(row))
+```
 
+Use the reader as a context manager:
+
+```python
+from get_reader import get_reader
+
+with get_reader('myfile.csv') as reader:
     for row in reader:
         print(', '.join(row))
 ```
 
-Automatically detects other data sources if optional extras are
-installed:
+Access other data sources if optional extras are installed:
 
 ```python
 from get_reader import get_reader
 
-# From an Excel file
-reader = get_reader('myfile.xlsx')  # requires xlrd package
+# From an MS Excel file.
+reader = get_reader('myfile.xlsx')
 
-# From a DataFrame
+# From a DBF file.
+reader = get_reader('myfile.dbf')
+
+# From a DataFrame.
 df = pd.DataFrame([...])
 reader = get_reader(df)  # requires pandas
-
-# From a DBF file
-reader = get_reader('myfile.dbf')  # requires dbfread package
 ```
 
-Explicit constructors can be called directly to override auto-detect
-behavior:
+Override auto-detect behavior by calling constructors directly:
 
 ```python
 from get_reader import get_reader
 
-# From a tab-delimited text file
+# Specify tab-delimited data from a text file.
 reader = get_reader.from_csv('myfile.txt', delimiter='\t')
 ```
 

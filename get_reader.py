@@ -241,6 +241,18 @@ def _from_namedtuples(records):
         yield record
 
 
+def _from_pandas(df, index=True):
+    """Takes a pandas.DataFrame and returns a generator."""
+    if index:
+        yield list(df.index.names) + list(df.columns)
+    else:
+        yield list(df.columns)
+
+    records = df.to_records(index=index)
+    for record in records:
+        yield list(record)
+
+
 #######################################################################
 # Get Reader.
 #######################################################################
@@ -350,6 +362,18 @@ class get_reader(object):
         return Reader(generator)
 
     @staticmethod
+    def from_pandas(df, index=True):
+        """Return a reader object which will iterate over records in
+        the pandas.DataFrame *df*.
+
+        .. note::
+
+            This constructor requires the optional, third-party
+            library pandas.
+        """
+        return Reader(_from_pandas(df, index=index))
+
+    @staticmethod
     def from_datatest(obj, fieldnames=None):
         """Return a reader object which will iterate over the records
         returned from a datatest Select, Query, or Result. If the
@@ -397,25 +421,6 @@ class get_reader(object):
 
         for value in iterable:
             yield value
-
-    @staticmethod
-    def from_pandas(df, index=True):
-        """Return a reader object which will iterate over records in
-        the pandas.DataFrame *df*.
-
-        .. note::
-
-            This constructor requires the optional, third-party
-            library pandas.
-        """
-        if index:
-            yield list(df.index.names) + list(df.columns)
-        else:
-            yield list(df.columns)
-
-        records = df.to_records(index=index)
-        for record in records:
-            yield list(record)
 
     @staticmethod
     def from_excel(path, worksheet=0):

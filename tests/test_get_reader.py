@@ -767,6 +767,7 @@ class TestFunctionDispatching(unittest.TestCase):
             [3, 'c'],
         ]
         self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
 
     @unittest.skipIf(not dbfread, 'dbfread not found')
     def test_dbf(self):

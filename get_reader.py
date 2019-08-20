@@ -142,7 +142,7 @@ if PY2:
     import codecs
 
 
-    def _unicode_rows(stream, encoding, dialect='excel', **kwds):
+    def _unicode_rows(stream, encoding, dialect, **kwds):
         """Unicode aware CSV handling for Python 2."""
         if isinstance(stream, io.IOBase):
             streamreader_type = codecs.getreader(encoding)
@@ -159,7 +159,7 @@ if PY2:
         return (make_unicode(row) for row in reader)
 
 
-    def _from_csv_path(path, encoding, dialect='excel', **kwds):
+    def _from_csv_path(path, encoding, dialect, **kwds):
         fh = open(path, 'rb')
         try:
             generator = _unicode_rows(fh, encoding, dialect=dialect, **kwds)
@@ -169,7 +169,7 @@ if PY2:
         return (generator, fh)
 
 
-    def _from_csv_iterable(iterable, encoding, dialect='excel', **kwds):
+    def _from_csv_iterable(iterable, encoding, dialect, **kwds):
         # Check that iterable is expected to return bytes (not strings).
         if isinstance(iterable, file):
             using_bytes = 'b' in iterable.mode
@@ -194,7 +194,7 @@ if PY2:
 
 else:  # Python 3
 
-    def _from_csv_path(path, encoding, dialect='excel', **kwds):
+    def _from_csv_path(path, encoding, dialect, **kwds):
         fh = open(path, 'rt', encoding=encoding, newline='')
         try:
             reader = csv.reader(fh, dialect=dialect, **kwds)
@@ -204,7 +204,7 @@ else:  # Python 3
         return (reader, fh)
 
 
-    def _from_csv_iterable(iterable, encoding, dialect='excel', **kwds):
+    def _from_csv_iterable(iterable, encoding, dialect, **kwds):
         return csv.reader(iterable, dialect=dialect, **kwds)
         # Above, the *encoding* arg is not used but is included so
         # that the csv-helper functions have the same signature.

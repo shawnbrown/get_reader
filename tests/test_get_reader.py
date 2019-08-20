@@ -312,7 +312,7 @@ class TestFromCsvIterable(unittest.TestCase):
             b'3,c\n'
         ), encoding='ascii')
 
-        reader = _from_csv_iterable(stream, encoding='ascii')
+        reader = _from_csv_iterable(stream, encoding='ascii', dialect='excel')
         expected = [
             ['col1', 'col2'],
             ['1', 'a'],
@@ -329,7 +329,7 @@ class TestFromCsvIterable(unittest.TestCase):
             b'3,\xfe\n'  # '\xfe' -> þ (thorn)
         ), encoding='iso8859-1')
 
-        reader = _from_csv_iterable(stream, encoding='iso8859-1')
+        reader = _from_csv_iterable(stream, encoding='iso8859-1', dialect='excel')
         expected = [
             ['col1', 'col2'],
             ['1', chr(0xe6)],  # chr(0xe6) -> æ
@@ -346,7 +346,7 @@ class TestFromCsvIterable(unittest.TestCase):
             b'3,\xf0\x9d\x94\xb8\n'  # '\xf0\x9d\x94\xb8' -> 𝔸 (mathematical double-struck A)
         ), encoding='utf-8')
 
-        reader = _from_csv_iterable(stream, encoding='utf-8')
+        reader = _from_csv_iterable(stream, encoding='utf-8', dialect='excel')
 
 
         try:
@@ -373,7 +373,7 @@ class TestFromCsvIterable(unittest.TestCase):
         ), encoding='utf-8')
 
         fmtparams = {'delimiter': ' ', 'quotechar': '|'}
-        reader = _from_csv_iterable(stream, encoding='utf-8', **fmtparams)
+        reader = _from_csv_iterable(stream, encoding='utf-8', dialect='excel', **fmtparams)
         expected = [
             ['col1', 'col2'],
             ['1', 'a'],
@@ -393,16 +393,16 @@ class TestFromCsvIterable(unittest.TestCase):
             bytes_stream = io.BytesIO(bytes_literal)
             text_stream = io.TextIOWrapper(bytes_stream, encoding='ascii')
             with self.assertRaises(TypeError):
-                reader = _from_csv_iterable(text_stream, 'ascii')
+                reader = _from_csv_iterable(text_stream, 'ascii', dialect='excel')
         else:
             bytes_stream = io.BytesIO(bytes_literal)
             with self.assertRaises((csv.Error, TypeError)):
-                reader = _from_csv_iterable(bytes_stream, 'ascii')
+                reader = _from_csv_iterable(bytes_stream, 'ascii', dialect='excel')
                 list(reader)  # Trigger evaluation.
 
     def test_empty_file(self):
         stream = self.get_stream(b'', encoding='ascii')
-        reader = _from_csv_iterable(stream, encoding='ascii')
+        reader = _from_csv_iterable(stream, encoding='ascii', dialect='excel')
         expected = []
         self.assertEqual(list(reader), expected)
 
@@ -410,7 +410,7 @@ class TestFromCsvIterable(unittest.TestCase):
 class TestFromCsvPath(unittest.TestCase):
     @using_relative_directory
     def test_utf8(self):
-        reader, _ = _from_csv_path('sample_text_utf8.csv', encoding='utf-8')
+        reader, _ = _from_csv_path('sample_text_utf8.csv', encoding='utf-8', dialect='excel')
         expected = [
             ['col1', 'col2'],
             ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
@@ -419,7 +419,7 @@ class TestFromCsvPath(unittest.TestCase):
 
     @using_relative_directory
     def test_iso88591(self):
-        reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1')
+        reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1', dialect='excel')
 
         expected = [
             ['col1', 'col2'],
@@ -430,13 +430,12 @@ class TestFromCsvPath(unittest.TestCase):
     @using_relative_directory
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
-            reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8')
+            reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8', dialect='excel')
             list(reader)  # Trigger evaluation.
 
     def test_file_not_found(self):
         with self.assertRaises(FileNotFoundError):
-            reader = _from_csv_path('missing_file.csv', encoding='iso8859-1')
-            list(reader)  # Trigger evaluation.
+            reader, _ = _from_csv_path('missing_file.csv', encoding='iso8859-1', dialect='excel')
 
 
 @unittest.skipIf(not datatest, 'datatest not found')

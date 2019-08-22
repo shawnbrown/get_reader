@@ -471,6 +471,18 @@ class TestFromCsvPath(unittest.TestCase):
     @using_relative_directory
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
+            reader, _ = _from_csv_path('sample_text_utf16.csv', encoding='utf-8', dialect='excel')
+            list(reader)  # Trigger evaluation.
+
+        with self.assertRaises(UnicodeDecodeError):
+            reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='ascii', dialect='excel')
+            list(reader)  # Trigger evaluation.
+
+        if PY2:
+            return  # <- EXIT!
+
+        # Following ISO-8859-1 (mis-identified as UTF-8) doesn't fail on Py 2.x.
+        with self.assertRaises(UnicodeDecodeError):
             reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8', dialect='excel')
             list(reader)  # Trigger evaluation.
 

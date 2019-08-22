@@ -155,18 +155,26 @@ if PY2:
 
 
     def _unicode_rows(stream, encoding, dialect, **kwds):
-        """Unicode aware CSV handling for Python 2."""
+        """Returns a generator that yields rows as lists of Unicode
+        values. The Python 2 `csv` module does not support Unicode
+        directly. For best results, the official docs recommend
+        encoding text as UTF-8 before passing it to csv.reader().
+        """
+        # Get Unicode stream.
         if isinstance(stream, io.IOBase):
             streamreader_type = codecs.getreader(encoding)
-            decoded_stream = streamreader_type(stream)
+            unicode_stream = streamreader_type(stream)
         elif isinstance(stream, Iterable):
-            decoded_stream = (row.decode(encoding) for row in stream)
+            unicode_stream = (row.decode(encoding) for row in stream)
         else:
             cls_name = stream.__class__.__name__
             raise TypeError('unsupported type {0}'.format(cls_name))
 
-        encoded_utf8 = (x.encode('utf-8') for x in decoded_stream)
-        reader = csv.reader(encoded_utf8, dialect=dialect, **kwds)
+        # Re-encode as UTF-8.
+        utf8_stream = (x.encode('utf-8') for x in unicode_stream)
+
+        # Pass to csv.reader() and return generator.
+        reader = csv.reader(utf8_stream, dialect=dialect, **kwds)
         make_unicode = lambda row: [unicode(s, 'utf-8') for s in row]
         return (make_unicode(row) for row in reader)
 

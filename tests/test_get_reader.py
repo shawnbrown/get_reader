@@ -358,7 +358,6 @@ class TestFromCsvIterable(unittest.TestCase):
 
         reader = _from_csv_iterable(stream, encoding='utf-8', dialect='excel')
 
-
         try:
             double_struck_a = chr(0x1d538)  # 𝔸
         except ValueError:
@@ -371,6 +370,29 @@ class TestFromCsvIterable(unittest.TestCase):
             ['1', chr(0x003b1)],     # α
             ['2', chr(0x00950)],     # ॐ
             ['3', double_struck_a],  # 𝔸
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_unicode(self):
+        """Test an iterator of Unicode strings."""
+        try:
+            u = unicode  # For Python 2 only.
+        except NameError:
+            u = str  # In Python 3, all strings are unicode.
+
+        stream = iter([
+            u('col1,col2\n'),
+            u('1,a\n'),
+            u('2,b\n'),
+            u('3,c\n'),
+        ])
+
+        reader = _from_csv_iterable(stream, encoding='ascii', dialect='excel')
+        expected = [
+            ['col1', 'col2'],
+            ['1', 'a'],
+            ['2', 'b'],
+            ['3', 'c'],
         ]
         self.assertEqual(list(reader), expected)
 

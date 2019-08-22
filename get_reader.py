@@ -172,7 +172,7 @@ if PY2:
 
 
     def _from_csv_path(path, encoding, dialect, **kwds):
-        fh = open(path, 'rb')
+        fh = io.open(path, 'rb')
         try:
             generator = _unicode_rows(fh, encoding, dialect=dialect, **kwds)
         except Exception:

@@ -428,6 +428,15 @@ class TestFromCsvPath(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     @using_relative_directory
+    def test_utf16(self):
+        reader, _ = _from_csv_path('sample_text_utf16.csv', encoding='utf-16', dialect='excel')
+        expected = [
+            ['col1', 'col2'],
+            ['utf16', 'abc'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @using_relative_directory
     def test_iso88591(self):
         reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1', dialect='excel')
 

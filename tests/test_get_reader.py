@@ -381,25 +381,17 @@ class TestFromCsvIterable(unittest.TestCase):
     def test_utf8(self):
         stream = self.get_stream((
             b'col1,col2\n'
-            b'1,\xce\xb1\n'          # '\xce\xb1'         -> α (Greek alpha)
-            b'2,\xe0\xa5\x90\n'      # '\xe0\xa5\x90'     -> ॐ (Devanagari Om)
-            b'3,\xf0\x9d\x94\xb8\n'  # '\xf0\x9d\x94\xb8' -> 𝔸 (mathematical double-struck A)
+            b'1,\xce\xb1\n'          # '1,α\n'
+            b'2,\xe0\xa5\x90\n'      # '2,ॐ\n'
+            b'3,\xf0\x9d\x94\xb8\n'  # '3,𝔸\n'
         ), encoding='utf-8')
-
         reader = _from_csv_iterable(stream, encoding='utf-8', dialect='excel')
-
-        try:
-            double_struck_a = chr(0x1d538)  # 𝔸
-        except ValueError:
-            double_struck_a = chr(0xd835) + chr(0xdd38)  # 𝔸
-            # Above, we use a "surrogate pair" to support older
-            # "narrow" (2-byte character) builds of Python.
 
         expected = [
             ['col1', 'col2'],
-            ['1', chr(0x003b1)],     # α
-            ['2', chr(0x00950)],     # ॐ
-            ['3', double_struck_a],  # 𝔸
+            ['1', unicode_alpha],
+            ['2', unicode_om],
+            ['3', unicode_math_a],
         ]
         self.assertEqual(list(reader), expected)
 

@@ -352,17 +352,17 @@ class TestFromCsvIterable(unittest.TestCase):
     def test_iso88591(self):
         stream = self.get_stream((
             b'col1,col2\n'
-            b'1,\xe6\n'  # '\xe6' -> æ (ash)
-            b'2,\xf0\n'  # '\xf0' -> ð (eth)
-            b'3,\xfe\n'  # '\xfe' -> þ (thorn)
+            b'1,\xe6\n'  # '1,æ\n'
+            b'2,\xf0\n'  # '2,ð\n'
+            b'3,\xfe\n'  # '3,þ\n'
         ), encoding='iso8859-1')
 
         reader = _from_csv_iterable(stream, encoding='iso8859-1', dialect='excel')
         expected = [
             ['col1', 'col2'],
-            ['1', chr(0xe6)],  # chr(0xe6) -> æ
-            ['2', chr(0xf0)],  # chr(0xf0) -> ð
-            ['3', chr(0xfe)],  # chr(0xfe) -> þ
+            ['1', unicode_ash],
+            ['2', unicode_eth],
+            ['3', unicode_thorn],
         ]
         self.assertEqual(list(reader), expected)
 

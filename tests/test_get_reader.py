@@ -400,17 +400,17 @@ class TestFromCsvIterable(unittest.TestCase):
 
         stream = iter([
             u('col1,col2\n'),
-            u('1,a\n'),
-            u('2,b\n'),
-            u('3,c\n'),
+            u('1,{0}\n').format(unicode_alpha),   # u'1,α\n'
+            u('2,{0}\n').format(unicode_om),      # u'2,ॐ\n'
+            u('3,{0}\n').format(unicode_math_a),  # u'3,𝔸\n'
         ])
+        reader = _from_csv_iterable(stream, encoding=None, dialect='excel')
 
-        reader = _from_csv_iterable(stream, encoding='ascii', dialect='excel')
         expected = [
             ['col1', 'col2'],
-            ['1', 'a'],
-            ['2', 'b'],
-            ['3', 'c'],
+            ['1', unicode_alpha],
+            ['2', unicode_om],
+            ['3', unicode_math_a],
         ]
         self.assertEqual(list(reader), expected)
 

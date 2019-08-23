@@ -165,7 +165,11 @@ if PY2:
             streamreader_type = codecs.getreader(encoding)
             unicode_stream = streamreader_type(stream)
         elif isinstance(stream, Iterable):
-            unicode_stream = (row.decode(encoding) for row in stream)
+            first_row, stream = iterpeek(stream)
+            if isinstance(first_row, unicode):
+                unicode_stream = stream  # Ignores given *encoding*.
+            else:
+                unicode_stream = (row.decode(encoding) for row in stream)
         else:
             cls_name = stream.__class__.__name__
             raise TypeError('unsupported type {0}'.format(cls_name))

@@ -8,7 +8,7 @@ objects similar to those returned by `csv.reader()`. This function:
 
 * provides a single, Unicode-aware interface for Python 2 and 3
 * reads data from a variety of sources (CSV, Excel, pandas, etc.)
-* optionally manages files automatically and reduces boilerplate code
+* optionally manages file handling and reduces boilerplate code
 
 Open a UTF-8 encoded CSV file in Python 2 or 3:
 

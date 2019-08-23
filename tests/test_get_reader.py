@@ -47,11 +47,6 @@ from get_reader import _from_dbf
 PY2 = sys.version_info[0] == 2
 
 try:
-    chr = unichr
-except NameError:
-    pass
-
-try:
     FileNotFoundError
 except NameError:
     FileNotFoundError = IOError
@@ -467,7 +462,7 @@ class TestFromCsvPath(unittest.TestCase):
         reader, _ = _from_csv_path('sample_text_utf8.csv', encoding='utf-8', dialect='excel')
         expected = [
             ['col1', 'col2'],
-            ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
+            ['utf8', unicode_alpha],
         ]
         self.assertEqual(list(reader), expected)
 
@@ -486,7 +481,7 @@ class TestFromCsvPath(unittest.TestCase):
 
         expected = [
             ['col1', 'col2'],
-            ['iso88591', chr(0xe6)],  # chr(0xe6) -> æ
+            ['iso88591', unicode_ash],
         ]
         self.assertEqual(list(reader), expected)
 
@@ -743,7 +738,7 @@ class TestFunctionDispatching(unittest.TestCase):
         reader = get_reader('sample_text_utf8.csv', encoding='utf-8')
         expected = [
             ['col1', 'col2'],
-            ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
+            ['utf8', unicode_alpha],
         ]
         self.assertEqual(list(reader), expected)
         self.assertIsInstance(reader, Reader)
@@ -751,7 +746,7 @@ class TestFunctionDispatching(unittest.TestCase):
         reader = get_reader('sample_text_iso88591.csv', encoding='iso8859-1')
         expected = [
             ['col1', 'col2'],
-            ['iso88591', chr(0xe6)],  # chr(0xe6) -> æ
+            ['iso88591', unicode_ash],
         ]
         self.assertEqual(list(reader), expected)
         self.assertIsInstance(reader, Reader)
@@ -768,7 +763,7 @@ class TestFunctionDispatching(unittest.TestCase):
             reader = get_reader(fh, encoding=encoding)
             expected = [
                 ['col1', 'col2'],
-                ['utf8', chr(0x003b1)],  # chr(0x003b1) -> α
+                ['utf8', unicode_alpha],
             ]
             self.assertEqual(list(reader), expected)
         self.assertIsInstance(reader, Reader)

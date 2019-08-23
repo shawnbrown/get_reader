@@ -76,6 +76,24 @@ def using_relative_directory(func):
     return wrapper
 
 
+try:
+    unichr  # unichr() only defined in Python 2
+except NameError:
+    unichr = chr  # chr() is Unicode-aware in Python 3
+
+unicode_ash = unichr(0xe6)              # æ (Old English ash)
+unicode_eth = unichr(0xf0)              # ð (Old English eth)
+unicode_thorn = unichr(0xfe)            # þ (Old English thorn)
+unicode_alpha = unichr(0x003b1)         # α (Greek alpha)
+unicode_om = unichr(0x00950)            # ॐ (Devanagari Om)
+try:
+    unicode_math_a = unichr(0x1d538)    # 𝔸 (mathematical double-struck A)
+except ValueError:
+    # To support older "narrow" (2-byte character) builds
+    # of Python, we use a "surrogate pair" to represent "𝔸".
+    unicode_math_a = unichr(0xd835) + unichr(0xdd38)
+
+
 class TestReader(unittest.TestCase):
     def setUp(self):
         self.log = {'is_closed': False}  # Record if close() has been called.

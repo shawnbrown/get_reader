@@ -57,6 +57,10 @@ except NameError:
     FileNotFoundError = IOError
 
 
+############################
+# Helper function for tests.
+############################
+
 def using_relative_directory(func):
     """Decorator to set the working directory to the same directory
     where __file__ is located before calling *func* and then reverting
@@ -76,6 +80,10 @@ def using_relative_directory(func):
     return wrapper
 
 
+###########################################
+# Define sample Unicode values for testing.
+###########################################
+
 try:
     unichr  # unichr() only defined in Python 2
 except NameError:
@@ -93,6 +101,10 @@ except ValueError:
     # of Python, we use a "surrogate pair" to represent "𝔸".
     unicode_math_a = unichr(0xd835) + unichr(0xdd38)
 
+
+##############################
+# Begin test case definitions.
+##############################
 
 class TestReader(unittest.TestCase):
     def setUp(self):

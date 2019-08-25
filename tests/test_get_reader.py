@@ -12,6 +12,11 @@ except ImportError:
     import unittest
 
 try:
+    import sqlite3  # Not included in Jython.
+except ImportError:
+    sqlite3 = None
+
+try:
     import datatest
 except ImportError:
     datatest = None
@@ -42,6 +47,7 @@ from get_reader import _from_pandas
 from get_reader import _from_datatest
 from get_reader import _from_excel
 from get_reader import _from_dbf
+from get_reader import _from_sql
 
 
 PY2 = sys.version_info[0] == 2
@@ -678,6 +684,82 @@ class TestFromPandas(unittest.TestCase):
             [2, 'b'],
             [3, 'c'],
         ]
+        self.assertEqual(list(reader), expected)
+
+
+@unittest.skipIf(not sqlite3, 'sqlite3 not found')
+class TestFromSql(unittest.TestCase):
+    def setUp(self):
+        connection = sqlite3.connect(':memory:')
+        connection.executescript("""
+            CREATE TABLE mytable (
+                foo TEXT,
+                bar REAL
+            );
+            INSERT INTO mytable
+            VALUES ('a', 0.8),
+                   ('a', 1.2),
+                   ('b', 2.5),
+                   ('b', 3.0);
+        """)
+        self.connection = connection
+
+    @unittest.skip('not yet implemented')
+    def test_table_name(self):
+        """When given a table name (instead of a query), return all rows."""
+        reader = _from_sql(self.connection, 'mytable')
+        expected = [
+            ('foo', 'bar'),
+            ('a', 0.8),
+            ('a', 1.2),
+            ('b', 2.5),
+            ('b', 3.0),
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skip('not yet implemented')
+    def test_query_select_all(self):
+        """Should use names from cursor.description for header row."""
+        query = 'SELECT * FROM mytable;'
+        reader = _from_sql(self.connection, query)
+        expected = [
+            ('foo', 'bar'),
+            ('a', 0.8),
+            ('a', 1.2),
+            ('b', 2.5),
+            ('b', 3.0),
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skip('not yet implemented')
+    def test_query_sum_groupby(self):
+        """Check that column alias ("AS total") is used in header."""
+        query = """
+            SELECT foo, SUM(bar) AS total
+            FROM mytable
+            GROUP BY foo;
+        """
+        reader = _from_sql(self.connection, query)
+        expected = [
+            ('foo', 'total'),
+            ('a', 2.0),
+            ('b', 5.5),
+        ]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skip('not yet implemented')
+    def test_query_empty_result(self):
+        query = """
+            SELECT foo, SUM(bar) AS total
+            FROM mytable
+            WHERE foo='c' /* <- No matching records. */
+            GROUP BY foo;
+        """
+        reader = _from_sql(self.connection, query)
+
+        # Should this return header or nothing?
+        #expected = []
+        #expected = [('foo', 'total')]
         self.assertEqual(list(reader), expected)
 
 

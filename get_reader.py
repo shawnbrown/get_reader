@@ -366,6 +366,12 @@ def _from_dbf(filename, encoding, **kwds):
         yield record
 
 
+def _from_sql(connection, table_or_query):
+    """Return a reader object which will iterate over records from the
+    given table or query result.
+    """
+
+
 #######################################################################
 # Get Reader.
 #######################################################################

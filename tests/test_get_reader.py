@@ -716,7 +716,6 @@ class TestFromSql(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @unittest.skip('not yet implemented')
     def test_query_select_all(self):
         """Should use names from cursor.description for header row."""
         query = 'SELECT * FROM mytable;'
@@ -730,7 +729,6 @@ class TestFromSql(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @unittest.skip('not yet implemented')
     def test_query_sum_groupby(self):
         """Check that column alias ("AS total") is used in header."""
         query = """
@@ -746,7 +744,6 @@ class TestFromSql(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @unittest.skip('not yet implemented')
     def test_query_empty_result(self):
         query = """
             SELECT foo, SUM(bar) AS total
@@ -755,10 +752,7 @@ class TestFromSql(unittest.TestCase):
             GROUP BY foo;
         """
         reader = _from_sql(self.connection, query)
-
-        # Should this return header or nothing?
-        #expected = []
-        #expected = [('foo', 'total')]
+        expected = [('foo', 'total')]
         self.assertEqual(list(reader), expected)
 
 

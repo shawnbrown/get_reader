@@ -371,7 +371,10 @@ def _from_sql(connection, table_or_query):
     given table or query result.
     """
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM {0}'.format(table_or_query))
+    try:
+        cursor.execute(table_or_query)
+    except Exception:
+        cursor.execute('SELECT * FROM {0}'.format(table_or_query))
     header = tuple(x[0] for x in cursor.description)
     reader = chain([header], cursor)
     return reader

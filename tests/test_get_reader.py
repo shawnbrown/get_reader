@@ -202,6 +202,12 @@ class TestReader(unittest.TestCase):
         msg = 'should auto-close when exiting context manager'
         self.assertTrue(self.log['is_closed'], msg=msg)
 
+    def test_close_on_del(self):
+        reader = Reader([['a', 'x'], ['b', 'y']], self.closefunc)
+        reader.__del__()
+        msg = 'should auto-close when reader is deleted'
+        self.assertTrue(self.log['is_closed'], msg=msg)
+
 
 class TestReaderLike(unittest.TestCase):
     def test_instantiation(self):

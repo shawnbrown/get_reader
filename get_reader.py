@@ -94,6 +94,9 @@ class Reader(ABC):
             self._closefunc()
             self._closefunc = None
 
+    def __del__(self):
+        self.close()
+
     # Iterator protocol.
 
     def __iter__(self):

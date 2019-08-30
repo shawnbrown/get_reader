@@ -704,7 +704,6 @@ class TestFromSql(unittest.TestCase):
         """)
         self.connection = connection
 
-    @unittest.skip('not yet implemented')
     def test_table_name(self):
         """When given a table name (instead of a query), return all rows."""
         reader = _from_sql(self.connection, 'mytable')

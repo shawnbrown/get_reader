@@ -190,7 +190,7 @@ if PY2:
         except Exception:
             fh.close()
             raise
-        return (generator, fh)
+        return (generator, fh.close)
 
 
     def _from_csv_iterable(iterable, encoding, dialect, **kwds):
@@ -225,7 +225,7 @@ else:  # Python 3
         except Exception:
             fh.close()
             raise
-        return (reader, fh)
+        return (reader, fh.close)
 
 
     def _from_csv_iterable(iterable, encoding, dialect, **kwds):
@@ -467,8 +467,8 @@ class GetReaderType(object):
         ``newline=''``.
         """
         if isinstance(csvfile, string_types):
-            reader, fh = _from_csv_path(csvfile, encoding, dialect=dialect, **kwds)
-            return Reader(reader, closefunc=fh.close)
+            reader, closefunc = _from_csv_path(csvfile, encoding, dialect=dialect, **kwds)
+            return Reader(reader, closefunc=closefunc)
 
         reader = _from_csv_iterable(csvfile, encoding, dialect=dialect, **kwds)
         return Reader(reader)

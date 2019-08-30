@@ -706,7 +706,7 @@ class TestFromSql(unittest.TestCase):
 
     def test_table_name(self):
         """When given a table name (instead of a query), return all rows."""
-        reader = _from_sql(self.connection, 'mytable')
+        reader, _ = _from_sql(self.connection, 'mytable')
         expected = [
             ('foo', 'bar'),
             ('a', 0.8),
@@ -719,7 +719,7 @@ class TestFromSql(unittest.TestCase):
     def test_query_select_all(self):
         """Should use names from cursor.description for header row."""
         query = 'SELECT * FROM mytable;'
-        reader = _from_sql(self.connection, query)
+        reader, _ = _from_sql(self.connection, query)
         expected = [
             ('foo', 'bar'),
             ('a', 0.8),
@@ -736,7 +736,7 @@ class TestFromSql(unittest.TestCase):
             FROM mytable
             GROUP BY foo;
         """
-        reader = _from_sql(self.connection, query)
+        reader, _ = _from_sql(self.connection, query)
         expected = [
             ('foo', 'total'),
             ('a', 2.0),
@@ -751,7 +751,7 @@ class TestFromSql(unittest.TestCase):
             WHERE foo='c' /* <- No matching records. */
             GROUP BY foo;
         """
-        reader = _from_sql(self.connection, query)
+        reader, _ = _from_sql(self.connection, query)
         expected = [('foo', 'total')]
         self.assertEqual(list(reader), expected)
 
@@ -770,7 +770,7 @@ class TestFromSql(unittest.TestCase):
                 return MockCursor()
 
         try:
-            reader = _from_sql(MockConnection(), 'Bad query, failed execution!')
+            reader, _ = _from_sql(MockConnection(), 'Bad query, failed execution!')
         except Exception:
             pass
 

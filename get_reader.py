@@ -381,7 +381,7 @@ def _from_sql(connection, table_or_query):
             raise
     header = tuple(x[0] for x in cursor.description)
     reader = chain([header], cursor)
-    return reader
+    return (reader, cursor.close)
 
 
 #######################################################################

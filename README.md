@@ -188,8 +188,8 @@ reader = get_reader('myfile.dbf')
 > **from\_excel**(*path*, *worksheet*=0)
 >
 > Return a reader object which will iterate over lines in the given
-> Excel worksheet. path must specify to an XLSX or XLS file and
-> worksheet should specify the index or name of the worksheet to
+> Excel worksheet. The *path* must specify an XLSX or XLS file and
+> *worksheet* must specify the index or name of the worksheet to
 > load (defaults to the first worksheet).
 >
 > Load first worksheet:

@@ -755,6 +755,27 @@ class TestFromSql(unittest.TestCase):
         expected = [('foo', 'total')]
         self.assertEqual(list(reader), expected)
 
+    def test_close_on_error(self):
+        log = {'is_closed': False}  # Indicate if close() has been called.
+
+        class MockConnection(object):
+            def cursor(_self):
+                class MockCursor(object):
+                    def execute(_self, *args, **kwds):
+                        raise Exception('Failed execution!')
+
+                    def close(_self):
+                        log['is_closed'] = True
+
+                return MockCursor()
+
+        try:
+            reader = _from_sql(MockConnection(), 'Bad query, failed execution!')
+        except Exception:
+            pass
+
+        self.assertTrue(log['is_closed'], msg='internal cursor should be closed on error')
+
 
 @unittest.skipIf(not xlrd, 'xlrd not found')
 class TestFromExcel(unittest.TestCase):

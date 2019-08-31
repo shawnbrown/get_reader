@@ -1,12 +1,12 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from . import unittest
-from get_reader import _from_pandas
 try:
     import pandas
 except ImportError:
     pandas = None
+
+from get_reader import _from_pandas
 
 
 @unittest.skipIf(not pandas, 'pandas not found')

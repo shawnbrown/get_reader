@@ -20,7 +20,6 @@ from get_reader import get_reader
 from get_reader import _from_dicts
 from get_reader import _from_namedtuples
 from get_reader import _from_datatest
-from get_reader import _from_excel
 from get_reader import _from_dbf
 from get_reader import _from_sql
 
@@ -352,35 +351,6 @@ class TestFromDatatest(unittest.TestCase):
         self.assertEqual(reader_list[0], ('foo', 'bar'))
         self.assertEqual(reader_list.count(('x', 1)), 2)
         self.assertEqual(reader_list.count(('y', 2)), 1)
-
-
-@unittest.skipIf(not xlrd, 'xlrd not found')
-class TestFromExcel(unittest.TestCase):
-    def setUp(self):
-        dirname = os.path.dirname(__file__)
-        self.filepath = os.path.join(dirname, 'sample_multiworksheet.xlsx')
-
-    def test_default_worksheet(self):
-        reader, _ = _from_excel(self.filepath)  # <- Defaults to 1st worksheet.
-
-        expected = [
-            ['col1', 'col2'],
-            [1, 'a'],
-            [2, 'b'],
-            [3, 'c'],
-        ]
-        self.assertEqual(list(reader), expected)
-
-    def test_specified_worksheet(self):
-        reader, _ = _from_excel(self.filepath, 'Sheet2')  # <- Specified worksheet.
-
-        expected = [
-            ['col1', 'col2'],
-            [4, 'd'],
-            [5, 'e'],
-            [6, 'f'],
-        ]
-        self.assertEqual(list(reader), expected)
 
 
 @unittest.skipIf(not dbfread, 'dbfread not found')

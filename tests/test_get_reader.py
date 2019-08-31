@@ -874,7 +874,6 @@ class TestFromDbf(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
 
-#@unittest.skip('skip while refactoring')
 class TestFunctionDispatching(unittest.TestCase):
     def setUp(self):
         self._orig_dir = os.getcwd()

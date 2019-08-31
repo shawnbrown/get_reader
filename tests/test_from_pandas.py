@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from . import unittest
-try:
-    import pandas
-except ImportError:
-    pandas = None
+from .common import (
+    unittest,
+    pandas,
+)
 
 from get_reader import _from_pandas
 

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from . import unittest
-try:
-    import sqlite3  # Not included in Jython.
-except ImportError:
-    sqlite3 = None
+from .common import (
+    unittest,
+    sqlite3,
+)
 
 from get_reader import _from_sql
 

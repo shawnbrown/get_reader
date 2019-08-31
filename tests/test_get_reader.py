@@ -3,12 +3,10 @@
 from __future__ import absolute_import
 import collections
 import csv
-import functools
 import io
 import os
-import sys
-from . import unittest
 from .common import (
+    unittest,
     datatest,
     dbfread,
     pandas,

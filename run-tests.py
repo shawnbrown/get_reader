@@ -1,20 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import os
 import sys
 
-
-if sys.version_info[:2] < (2, 7):
-    try:
-        import unittest2 as unittest
-    except ImportError:
-        message = 'tests require `unittest2` for Python 2.6 and earlier'
-        raise ImportError(message)
-else:
-    import unittest
-
-
 sys.dont_write_bytecode = True
+import tests.unittest as unittest
 
 
 if __name__ == '__main__':

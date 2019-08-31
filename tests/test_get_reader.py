@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import collections
 import csv
 import functools
 import io
 import os
 import sys
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from . import unittest
 
 try:
     import sqlite3  # Not included in Jython.

@@ -8,32 +8,21 @@ import io
 import os
 import sys
 from . import unittest
-
-try:
-    import sqlite3  # Not included in Jython.
-except ImportError:
-    sqlite3 = None
-
-try:
-    import datatest
-except ImportError:
-    datatest = None
-
-try:
-    import pandas
-except ImportError:
-    pandas = None
-
-try:
-    import xlrd
-except ImportError:
-    xlrd = None
-
-try:
-    import dbfread
-except ImportError:
-    dbfread = None
-
+from .common import (
+    datatest,
+    dbfread,
+    pandas,
+    xlrd,
+    PY2,
+    FileNotFoundError,
+    using_relative_directory,
+    unicode_ash,
+    unicode_eth,
+    unicode_thorn,
+    unicode_alpha,
+    unicode_om,
+    unicode_math_a,
+)
 from get_reader import Reader
 from get_reader import ReaderLike
 from get_reader import get_reader
@@ -45,59 +34,6 @@ from get_reader import _from_datatest
 from get_reader import _from_excel
 from get_reader import _from_dbf
 from get_reader import _from_sql
-
-
-PY2 = sys.version_info[0] == 2
-
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError
-
-
-############################
-# Helper function for tests.
-############################
-
-def using_relative_directory(func):
-    """Decorator to set the working directory to the same directory
-    where __file__ is located before calling *func* and then reverting
-    back to the original directory afterward.
-    """
-    original_dir = os.path.abspath(os.getcwd())
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwds):
-        try:
-            os.chdir(os.path.abspath(os.path.dirname(__file__)))
-            result = func(*args, **kwds)
-        finally:
-            os.chdir(original_dir)  # Revert to original directory.
-        return result
-
-    return wrapper
-
-
-###########################################
-# Define sample Unicode values for testing.
-###########################################
-
-try:
-    unichr  # unichr() only defined in Python 2
-except NameError:
-    unichr = chr  # chr() is Unicode-aware in Python 3
-
-unicode_ash = unichr(0xe6)              # æ (Old English ash)
-unicode_eth = unichr(0xf0)              # ð (Old English eth)
-unicode_thorn = unichr(0xfe)            # þ (Old English thorn)
-unicode_alpha = unichr(0x003b1)         # α (Greek alpha)
-unicode_om = unichr(0x00950)            # ॐ (Devanagari Om)
-try:
-    unicode_math_a = unichr(0x1d538)    # 𝔸 (mathematical double-struck A)
-except ValueError:
-    # To support older "narrow" (2-byte character) builds
-    # of Python, we use a "surrogate pair" to represent "𝔸".
-    unicode_math_a = unichr(0xd835) + unichr(0xdd38)
 
 
 ##############################

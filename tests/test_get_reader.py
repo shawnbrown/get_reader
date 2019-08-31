@@ -761,6 +761,56 @@ class TestFromSql(unittest.TestCase):
         expected = [('foo', 'total')]
         self.assertEqual(list(reader), expected)
 
+    def test_barebones_cursor(self):
+        """Should not assume that all cursor objects are iterable.
+        While it's common for cursors to be iterable, this behavior
+        is part of DBAPI2's "Optional DB API Extensions" and should
+        not be required for correct operation.
+        """
+        class WrappedConnection(object):
+            def __init__(_self, connection):
+                _self._connection = connection
+
+            def cursor(_self):
+                class NonIterableCursor(object):
+                    def __init__(_self, cursor):
+                        _self._cursor = cursor
+
+                    def execute(_self, *args, **kwds):
+                        _self._cursor.execute(*args, **kwds)
+
+                    @property
+                    def description(_self):
+                        return _self._cursor.description
+
+                    def fetchone(_self):
+                        return _self._cursor.fetchone()
+
+                    def close(_self):
+                        _self._cursor.close()
+
+                cursor = _self._connection.cursor()
+                return NonIterableCursor(cursor)
+
+        connection = WrappedConnection(self.connection)
+
+        # Check cursor.
+        with self.assertRaises(TypeError, msg='should not be iterable'):
+            iter(connection.cursor())
+
+        # Check reader result.
+        reader, _ = _from_sql(connection, 'mytable')
+        expected = [
+            ('foo', 'bar'),
+            ('a', 0.8),
+            ('a', 1.2),
+            ('b', 2.5),
+            ('b', 3.0),
+        ]
+        self.assertEqual(list(reader), expected)
+
+
+
     def test_close_on_error(self):
         log = {'is_closed': False}  # Indicate if close() has been called.
 

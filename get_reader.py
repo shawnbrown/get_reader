@@ -382,8 +382,22 @@ def _from_sql(connection, table_or_query):
         except Exception:
             cursor.close()
             raise
+
+    try:
+        # If iterable, use cursor directly.
+        iter(cursor)
+        results = cursor
+    except TypeError:
+        # If not iterable, build a generator.
+        def result_generator(cursor):
+            row = cursor.fetchone()
+            while row != None:
+                yield row
+                row = cursor.fetchone()
+        results = result_generator(cursor)
+
     header = tuple(x[0] for x in cursor.description)
-    reader = chain([header], cursor)
+    reader = chain([header], results)
     return (reader, cursor.close)
 
 

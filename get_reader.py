@@ -9,13 +9,6 @@ from itertools import (
 )
 
 try:
-    from abc import ABC  # New in version 3.4.
-    ABC.__slots__  # New in version 3.7
-except (ImportError, AttributeError):
-    # Using Python 2 and 3 compatible syntax.
-    ABC = ABCMeta('ABC', (object,), {'__slots__': ()})
-
-try:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
@@ -75,7 +68,7 @@ NOVALUE = type(
 )()
 
 
-class Reader(ABC):
+class Reader(object):
     def __init__(self, iterable, closefunc=NOVALUE):
         if isinstance(iterable, Reader):
             if closefunc is NOVALUE:

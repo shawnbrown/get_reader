@@ -809,8 +809,6 @@ class TestFromSql(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-
-
     def test_close_on_error(self):
         log = {'is_closed': False}  # Indicate if close() has been called.
 

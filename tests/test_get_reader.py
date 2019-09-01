@@ -201,20 +201,6 @@ class TestFromNamedtuples(unittest.TestCase):
         self.assertEqual(list(records), [])
 
 
-@unittest.skipIf(not dbfread, 'dbfread not found')
-class TestFromDbf(unittest.TestCase):
-    def test_dbf(self):
-        dirname = os.path.dirname(__file__)
-        filepath = os.path.join(dirname, 'sample_dbase.dbf')
-
-        reader = _from_dbf(filepath, encoding=None)
-        expected = [
-            ['COL1', 'COL2'],
-            ['dBASE', 1],
-        ]
-        self.assertEqual(list(reader), expected)
-
-
 class TestFunctionDispatching(unittest.TestCase):
     def setUp(self):
         self._orig_dir = os.getcwd()

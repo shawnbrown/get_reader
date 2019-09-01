@@ -16,10 +16,6 @@ from .common import (
 from get_reader import Reader
 from get_reader import ReaderLike
 from get_reader import get_reader
-from get_reader import _from_dicts
-from get_reader import _from_datatest
-from get_reader import _from_dbf
-from get_reader import _from_sql
 
 
 ##############################

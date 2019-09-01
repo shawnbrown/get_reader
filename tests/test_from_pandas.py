@@ -9,7 +9,7 @@ from get_reader import _from_pandas
 
 
 @unittest.skipIf(not pandas, 'pandas not found')
-class TestFromPandas(unittest.TestCase):
+class TestDataFrame(unittest.TestCase):
     def setUp(self):
         self.df = pandas.DataFrame({
             'col1': (1, 2, 3),
@@ -78,3 +78,126 @@ class TestFromPandas(unittest.TestCase):
             [3, 'c'],
         ]
         self.assertEqual(list(reader), expected)
+
+
+@unittest.skipIf(not pandas, 'pandas not found')
+class TestSeries(unittest.TestCase):
+    def test_automatic_indexing(self):
+        s = pandas.Series(['a', 'b', 'c'], name='mycolumn')
+
+        reader = _from_pandas(s)  # <- Includes index by default.
+        expected = [
+            [None, 'mycolumn'],
+            [0, 'a'],
+            [1, 'b'],
+            [2, 'c'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = _from_pandas(s, index=False)  # <- Omits index.
+        expected = [
+            ['mycolumn'],
+            ['a'],
+            ['b'],
+            ['c'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_simple_index(self):
+        s = pandas.Series(
+            data=['a', 'b', 'c'],
+            index=pandas.Index(['x', 'y', 'z'], name='myindex'),
+            name='mycolumn',
+        )
+
+        reader = _from_pandas(s)
+        expected = [
+            ['myindex', 'mycolumn'],
+            ['x', 'a'],
+            ['y', 'b'],
+            ['z', 'c'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = _from_pandas(s, index=False)
+        expected = [
+            ['mycolumn'],
+            ['a'],
+            ['b'],
+            ['c'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+    def test_multiindex(self):
+        multiindex = [('x', 'one'), ('x', 'two'), ('y', 'three')]
+        multiindex = pandas.MultiIndex.from_tuples(multiindex, names=['A', 'B'])
+        s = pandas.Series(
+            data=['a', 'b', 'c'],
+            index=multiindex,
+            name='mycolumn',
+        )
+
+        reader = _from_pandas(s)
+        expected = [
+            ['A', 'B', 'mycolumn'],
+            ['x', 'one', 'a'],
+            ['x', 'two', 'b'],
+            ['y', 'three', 'c'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = _from_pandas(s, index=False)
+        expected = [
+            ['mycolumn'],
+            ['a'],
+            ['b'],
+            ['c'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+@unittest.skipIf(not pandas, 'pandas not found')
+class TestIndex(unittest.TestCase):
+    def test_simple_index(self):
+        index = pandas.Index(['x', 'y', 'z'], name='myindex')
+
+        reader = _from_pandas(index)
+        expected = [
+            ['myindex'],
+            ['x'],
+            ['y'],
+            ['z'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = _from_pandas(index, index=False)
+        expected = [
+            ['myindex'],
+            ['x'],
+            ['y'],
+            ['z'],
+        ]
+        msg = 'The `index` arg should be ingored when obj is a pandas Index.'
+        self.assertEqual(list(reader), expected, msg=msg)
+
+    def test_multiindex(self):
+        multiindex = [('x', 'one'), ('x', 'two'), ('y', 'three')]
+        multiindex = pandas.MultiIndex.from_tuples(multiindex, names=['A', 'B'])
+
+        reader = _from_pandas(multiindex)
+        expected = [
+            ['A', 'B'],
+            ['x', 'one'],
+            ['x', 'two'],
+            ['y', 'three'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+        reader = _from_pandas(multiindex, index=False)
+        expected = [
+            ['A', 'B'],
+            ['x', 'one'],
+            ['x', 'two'],
+            ['y', 'three'],
+        ]
+        msg = 'The `index` arg should be ingored when obj is a pandas Index.'
+        self.assertEqual(list(reader), expected, msg=msg)

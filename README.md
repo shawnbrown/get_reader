@@ -208,10 +208,10 @@ reader = get_reader('myfile.dbf')
 > ```
 
 
-> **from\_pandas**(*df*, *index*=True)
+> **from\_pandas**(*obj*, *index*=True)
 >
 > Return a reader object which will iterate over records in
-> the `pandas.DataFrame` *df*.
+> a pandas `DataFrame`, `Series`, `Index` or `MultiIndex`.
 
 
 > **from\_dbf**(*filename*, *encoding*=None, \*\**kwds*)

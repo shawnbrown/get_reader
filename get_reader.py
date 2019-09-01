@@ -247,8 +247,17 @@ def _from_dicts(records, fieldnames=None):
         yield [row.get(key, None) for key in fieldnames]
 
 
-def _from_pandas(df, index=True):
-    """Takes a pandas.DataFrame and returns a generator."""
+def _from_pandas(obj, index=True):
+    """Takes a pandas DataFrame, Series, Index, or MultiIndex and
+    returns a generator.
+    """
+    if hasattr(obj, 'to_frame'):  # Only Series and indexes have `to_frame`.
+        if not hasattr(obj, 'index'):  # Only indexes lack `index`.
+            index = False
+        df = obj.to_frame()
+    else:
+        df = obj
+
     if index:
         yield list(df.index.names) + list(df.columns)
     else:
@@ -474,16 +483,11 @@ class GetReaderType(object):
         generator = _from_dicts(records, fieldnames=fieldnames)
         return Reader(generator)
 
-    def from_pandas(self, df, index=True):
+    def from_pandas(self, obj, index=True):
         """Return a reader object which will iterate over records in
-        the pandas.DataFrame *df*.
-
-        .. note::
-
-            This constructor requires the optional, third-party
-            library pandas.
+        a pandas DataFrame, Series, Index, or MultiIndex.
         """
-        return Reader(_from_pandas(df, index=index))
+        return Reader(_from_pandas(obj, index=index))
 
     def from_datatest(self, obj, fieldnames=None):
         """Return a reader object which will iterate over the records

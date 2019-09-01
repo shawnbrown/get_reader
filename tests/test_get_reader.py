@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import collections
 import csv
 import os
 from .common import (
@@ -18,7 +17,6 @@ from get_reader import Reader
 from get_reader import ReaderLike
 from get_reader import get_reader
 from get_reader import _from_dicts
-from get_reader import _from_namedtuples
 from get_reader import _from_datatest
 from get_reader import _from_dbf
 from get_reader import _from_sql
@@ -177,30 +175,6 @@ class TestReaderLike(unittest.TestCase):
         self.assertFalse(isinstance(non_iterable, ReaderLike), msg=msg)
 
 
-class TestFromNamedtuples(unittest.TestCase):
-    def test_namedtuple_records(self):
-        ntup = collections.namedtuple('ntup', ['col1', 'col2'])
-        records = [
-            ntup(1, 'a'),
-            ntup(2, 'b'),
-            ntup(3, 'c'),
-        ]
-        reader = _from_namedtuples(records)
-
-        expected = [
-            ('col1', 'col2'),
-            (1, 'a'),
-            (2, 'b'),
-            (3, 'c'),
-        ]
-        self.assertEqual(list(reader), expected)
-
-    def test_empty_records(self):
-        records = []
-        reader = _from_namedtuples(records)
-        self.assertEqual(list(records), [])
-
-
 class TestFunctionDispatching(unittest.TestCase):
     def setUp(self):
         self._orig_dir = os.getcwd()
@@ -257,17 +231,6 @@ class TestFunctionDispatching(unittest.TestCase):
         reader = get_reader(records, ['col1'])  # <- Give fieldnames arg.
         self.assertIsInstance(reader, Reader)
         expected = [['col1'], ['first'], ['second']]
-        self.assertEqual(list(reader), expected)
-
-    def test_namedtuples(self):
-        ntup = collections.namedtuple('ntup', ['col1', 'col2'])
-
-        records = [ntup(1, 'a'), ntup(2, 'b')]
-        reader = get_reader(records)
-
-        self.assertIsInstance(reader, Reader)
-
-        expected = [('col1', 'col2'), (1, 'a'), (2, 'b')]
         self.assertEqual(list(reader), expected)
 
     @unittest.skipIf(not pandas, 'pandas not found')

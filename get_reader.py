@@ -247,20 +247,6 @@ def _from_dicts(records, fieldnames=None):
         yield [row.get(key, None) for key in fieldnames]
 
 
-def _from_namedtuples(records):
-    """Takes a container of namedtuple *records* and returns a
-    generator.
-    """
-    records = iter(records)
-    first_record = next(records, None)
-    if first_record:
-        yield first_record._fields  # Header row.
-        yield first_record
-
-    for record in records:
-        yield record
-
-
 def _from_pandas(df, index=True):
     """Takes a pandas.DataFrame and returns a generator."""
     if index:
@@ -456,9 +442,6 @@ class GetReaderType(object):
                 if isinstance(first_value, dict):
                     return self.from_dicts(iterator, *args, **kwds)
 
-                if hasattr(first_value, '_fields'):
-                    return self.from_namedtuples(iterator, *args, **kwds)
-
                 if isinstance(first_value, (list, tuple)):
                     return iterator  # Already seems reader-like.
 
@@ -489,14 +472,6 @@ class GetReaderType(object):
         into a plain, non-dictionary reader.
         """
         generator = _from_dicts(records, fieldnames=fieldnames)
-        return Reader(generator)
-
-    def from_namedtuples(self, records):
-        """Takes a container of namedtuple *records* and returns a
-        Reader. The first item in the reader will be a header row
-        taken from the first namedtuple's `_fields` property.
-        """
-        generator = _from_namedtuples(records)
         return Reader(generator)
 
     def from_pandas(self, df, index=True):

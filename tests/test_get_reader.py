@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os
 from .common import (
     unittest,
+    sqlite3,
     datatest,
     dbfread,
     pandas,
@@ -72,6 +73,30 @@ class TestFunctionDispatching(unittest.TestCase):
         reader = get_reader(records, ['col1'])  # <- Give fieldnames arg.
         self.assertIsInstance(reader, Reader)
         expected = [['col1'], ['first'], ['second']]
+        self.assertEqual(list(reader), expected)
+
+    @unittest.skipIf(not sqlite3, 'sqlite3 not found')
+    def test_sql(self):
+        connection = sqlite3.connect(':memory:')
+        connection.executescript("""
+            CREATE TABLE mytable (
+                foo TEXT,
+                bar REAL
+            );
+            INSERT INTO mytable
+            VALUES ('a', 0.8),
+                   ('a', 1.2),
+                   ('b', 2.5),
+                   ('b', 3.0);
+        """)
+        reader = get_reader(connection, 'mytable')
+        expected = [
+            ('foo', 'bar'),
+            ('a', 0.8),
+            ('a', 1.2),
+            ('b', 2.5),
+            ('b', 3.0),
+        ]
         self.assertEqual(list(reader), expected)
 
     @unittest.skipIf(not pandas, 'pandas not found')

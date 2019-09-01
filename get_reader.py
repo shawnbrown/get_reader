@@ -432,6 +432,9 @@ class GetReaderType(object):
                     and getattr(obj, 'name', '').lower().endswith('.csv'):
                 return self.from_csv(obj, *args, **kwds)
 
+            if all(hasattr(obj, x) for x in ('cursor', 'commit', 'close')):
+                return self.from_sql(obj, *args, **kwds)
+
             if 'datatest' in sys.modules:
                 datatest = sys.modules['datatest']
                 if isinstance(obj, (datatest.Query,
@@ -482,6 +485,14 @@ class GetReaderType(object):
         """
         generator = _from_dicts(records, fieldnames=fieldnames)
         return Reader(generator)
+
+    def from_sql(self, connection, table_or_query):
+        """Return a reader object which will iterate over the records
+        from a given database table or over the records returned from
+        a SQL query.
+        """
+        reader, close_cursor = _from_sql(connection, table_or_query)
+        return Reader(reader, closefunc=close_cursor)
 
     def from_pandas(self, obj, index=True):
         """Return a reader object which will iterate over records in

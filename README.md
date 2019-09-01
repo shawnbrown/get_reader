@@ -125,12 +125,16 @@ from get_reader import get_reader
 # CSV file.
 reader = get_reader('myfile.csv')
 
-# Excel file.
-reader = get_reader('myfile.xlsx', worksheet='Sheet2')
+# Database connection.
+connection = ...
+reader = get_reader(connection, 'SELECT col1, col2 FROM mytable;')
 
 # Pandas DataFrame.
-df = pandas.DataFrame([...])
+df = pd.DataFrame([...])
 reader = get_reader(df)
+
+# Excel file.
+reader = get_reader('myfile.xlsx', worksheet='Sheet2')
 
 # DBF file.
 reader = get_reader('myfile.dbf')
@@ -166,8 +170,8 @@ reader = get_reader('myfile.dbf')
 > **from\_dicts**(*records*, *fieldnames*=None)
 >
 > Return a reader object which will iterate over the given
->  dictionary *records*. This can be thought of as converting a
->  `csv.DictReader()` into a plain, non-dictionary `csv.reader()`.
+> dictionary *records*. This can be thought of as converting a
+> `csv.DictReader()` into a plain, non-dictionary `csv.reader()`.
 >
 > ```python
 > from get_reader import get_reader
@@ -184,6 +188,30 @@ reader = get_reader('myfile.dbf')
 > record is a dictionary, it is assumed that all following records will
 > be dictionaries with matching keys.
 
+
+> **from\_sql**(*connection*, *table\_or\_query*)
+>
+> Return a reader object which will iterate over the records
+> from a given database table or over the records returned from
+> a SQL query. The *connection* should be a DBAPI2 compatible
+> database connection and *table\_or\_query* must be a string
+> with a table name or a SQL query.
+>
+> Read records from a specified table:
+>
+> ```python
+> from get_reader import get_reader
+>
+> connection = ...
+> reader = get_reader.from_sql(connection, 'mytable')
+>```
+>
+> Read records from the results of a SQL query:
+>
+> ```python
+> reader = get_reader.from_sql(connection, 'SELECT col1, col2 FROM mytable;')
+>```
+>
 
 > **from\_excel**(*path*, *worksheet*=0)
 >

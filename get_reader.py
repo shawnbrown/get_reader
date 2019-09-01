@@ -115,10 +115,10 @@ class Reader(object):
 
 
 class ReaderLikeABCMeta(ABCMeta):
-    _csvreader_type = type(csv.reader([]))
+    _reader_types = (Reader, type(csv.reader([])))
 
     def __instancecheck__(self, inst):  # <- Only looked up on metaclass.
-        if isinstance(inst, (Reader, self._csvreader_type)):
+        if isinstance(inst, self._reader_types):
             return True
 
         if not isinstance(inst, Iterable):  # Must be iterable.

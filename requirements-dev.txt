@@ -5,11 +5,11 @@
 #     pip install -r requirements-dev.txt
 #
 
-unittest2;python_version<"2.7"
 datatest
 dbfread
 pandas
-xlrd
+tox
 twine
+unittest2;python_version<"2.7"
 wheel
-
+xlrd

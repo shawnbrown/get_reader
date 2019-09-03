@@ -46,9 +46,9 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     license='Apache 2.0',
     python_requires='>=2.6.*, !=3.0.*, !=3.1.*',
-    classifiers  = [
+    classifiers=[
         'License :: OSI Approved :: Apache Software License',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',

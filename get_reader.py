@@ -255,9 +255,14 @@ def _from_pandas(obj, index=True):
         # Convert series to DataFrame.
         df = obj.to_frame()
     elif hasattr(obj, 'to_frame') and not hasattr(obj, 'index'):
-        # Convert MultiIndex or Index to DataFrame.
+        # Convert MultiIndex (pandas >=0.20.0) or Index (pandas >=0.21.0)
+        # to DataFrame.
         index = False
         df = obj.to_frame()
+    elif hasattr(obj, 'to_series'):
+        # Convert Index (pandas >=0.20.0,<0.21.0) to DataFrame.
+        index = False
+        df = obj.to_series().to_frame()
     else:
         # Else, it's already a DataFrame.
         df = obj

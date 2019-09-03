@@ -444,8 +444,8 @@ class GetReaderType(object):
             if all(hasattr(obj, x) for x in ('cursor', 'commit', 'close')):
                 return self.from_sql(obj, *args, **kwds)
 
-            if 'datatest' in sys.modules:
-                datatest = sys.modules['datatest']
+            datatest = sys.modules.get('datatest')
+            if datatest:
                 if isinstance(obj, (datatest.Query,
                                     datatest.Select,
                                     datatest.Result)):

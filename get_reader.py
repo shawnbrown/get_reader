@@ -251,11 +251,15 @@ def _from_pandas(obj, index=True):
     """Takes a pandas DataFrame, Series, Index, or MultiIndex and
     returns a generator.
     """
-    if hasattr(obj, 'to_frame'):  # Only Series and indexes have `to_frame`.
-        if not hasattr(obj, 'index'):  # Only indexes lack `index`.
-            index = False
+    if hasattr(obj, 'to_frame') and hasattr(obj, 'index'):
+        # Convert series to DataFrame.
+        df = obj.to_frame()
+    elif hasattr(obj, 'to_frame') and not hasattr(obj, 'index'):
+        # Convert MultiIndex or Index to DataFrame.
+        index = False
         df = obj.to_frame()
     else:
+        # Else, it's already a DataFrame.
         df = obj
 
     if index:

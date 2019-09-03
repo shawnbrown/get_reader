@@ -451,8 +451,9 @@ class GetReaderType(object):
                                     datatest.Result)):
                     return self.from_datatest(obj, *args, **kwds)
 
-            if 'pandas' in sys.modules:
-                if isinstance(obj, sys.modules['pandas'].DataFrame):
+            pandas = sys.modules.get('pandas')
+            if pandas:
+                if isinstance(obj, (pandas.DataFrame, pandas.Series, pandas.Index)):
                     return self.from_pandas(obj, *args, **kwds)
 
             if isinstance(obj, Iterable):

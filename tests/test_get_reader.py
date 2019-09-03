@@ -115,6 +115,40 @@ class TestFunctionDispatching(unittest.TestCase):
         self.assertEqual(list(reader), expected)
         self.assertIsInstance(reader, Reader)
 
+        s = pandas.Series(['a', 'b', 'c'], name='mydata')
+        reader = get_reader(s, index=False)
+        expected = [
+            ['mydata'],
+            ['a'],
+            ['b'],
+            ['c'],
+        ]
+        self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
+
+        index = pandas.Index(['x', 'y', 'z'], name='myindex')
+        reader = get_reader(index)
+        expected = [
+            ['myindex'],
+            ['x'],
+            ['y'],
+            ['z'],
+        ]
+        self.assertEqual(list(reader), expected)
+
+        multiindex = pandas.MultiIndex.from_tuples(
+            tuples=[('x', 'one'), ('x', 'two'), ('y', 'three')],
+            names=['A', 'B'],
+        )
+        reader = get_reader(multiindex)
+        expected = [
+            ['A', 'B'],
+            ['x', 'one'],
+            ['x', 'two'],
+            ['y', 'three'],
+        ]
+        self.assertEqual(list(reader), expected)
+
     @unittest.skipIf(not datatest, 'datatest not found')
     def test_datatest(self):
         select = datatest.Select([['A', 'B'], ['x', 1], ['y', 2]])

@@ -6,11 +6,13 @@ get_reader
 This module provides a `get_reader()` function that returns reader
 objects similar to those returned by `csv.reader()`. This function:
 
-* provides a single, Unicode-aware interface for Python 2 and 3
 * reads data from a variety of sources (CSV, Excel, pandas, etc.)
+* provides a single interface across Python versions (including
+  Unicode-aware CSV support for Python 2).
 * optionally manages file handling and reduces boilerplate code
 
-Open a UTF-8 encoded CSV file in Python 2 or 3:
+Open a UTF-8 encoded CSV (also works on old Python 2 versions without
+modification):
 
 ```python
 from get_reader import get_reader
@@ -21,7 +23,7 @@ for row in reader:
     print(', '.join(row))
 ```
 
-Open a Latin-1 (ISO-8859-1) encoded CSV file in Python 2 or 3:
+Open a Latin-1 (ISO-8859-1) encoded CSV file:
 
 ```python
 from get_reader import get_reader

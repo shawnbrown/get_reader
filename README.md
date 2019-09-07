@@ -26,7 +26,7 @@ for row in reader:
 Open a Latin-1 (ISO-8859-1) encoded CSV file:
 
 ```python
-from get_reader import get_reader
+...
 
 reader = get_reader('myfile.csv', encoding='latin-1')
 
@@ -37,36 +37,44 @@ for row in reader:
 Use the reader as a context manager:
 
 ```python
-from get_reader import get_reader
+...
 
 with get_reader('myfile.csv') as reader:
     for row in reader:
         print(', '.join(row))
 ```
 
-Access other data sources if optional extras are installed:
+Access other data sources:
 
 ```python
-from get_reader import get_reader
+...
 
-# From an MS Excel file.
-reader = get_reader('myfile.xlsx')
-
-# From a DBF file.
-reader = get_reader('myfile.dbf')
-
-# From a DataFrame.
+# From a pandas DataFrame, Series, Index, or MultiIndex.
 df = pd.DataFrame([...])
 reader = get_reader(df)  # requires pandas
+
+# From a database connection.
+connection = ...
+reader = get_reader(connection, 'SELECT col1, col2 FROM mytable;')
+
+# From an Excel file--must install with 'excel' option.
+reader = get_reader('myfile.xlsx')
+
+# From a DBF file--must install with 'dbf' option.
+reader = get_reader('myfile.dbf')
+
+# From a squint Select, Query, or Result.
+select = ...
+reader = get_reader(select({'col1': 'col2'}).sum())
 ```
 
-Override auto-detect behavior by calling constructors directly:
+Call constructors directly to override auto-detect behavior:
 
 ```python
-from get_reader import get_reader
+...
 
 # Specify tab-delimited data from a text file.
-reader = get_reader.from_csv('myfile.txt', delimiter='\t')
+reader = get_reader.from_csv('myfile.dat', delimiter='\t')
 ```
 
 
@@ -83,7 +91,7 @@ You can install `get_reader` using `pip`:
 pip install get_reader
 ```
 
-To install optional support for MS Excel, and DBF files (dBase,
+To install optional support for MS Excel and DBF files (dBase,
 Foxpro, etc.), use the following:
 
 ```shell

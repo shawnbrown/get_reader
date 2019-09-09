@@ -482,8 +482,8 @@ class GetReaderType(object):
         ``newline=''``.
         """
         if isinstance(csvfile, string_types):
-            reader, closefunc = _from_csv_path(csvfile, encoding, dialect=dialect, **kwds)
-            return Reader(reader, closefunc=closefunc)
+            reader, close_file = _from_csv_path(csvfile, encoding, dialect=dialect, **kwds)
+            return Reader(reader, closefunc=close_file)
 
         reader = _from_csv_iterable(csvfile, encoding, dialect=dialect, **kwds)
         return Reader(reader)

@@ -3,14 +3,14 @@ import functools
 import os
 import sys
 
-if sys.version_info[:2] < (2, 7):
+if sys.version_info[:2] > (2, 6):
+    import unittest
+else:
     try:
         import unittest2 as unittest
     except ImportError:
         message = 'tests require `unittest2` for Python 2.6 and earlier'
         raise ImportError(message)
-else:
-    import unittest
 
 try:
     import sqlite3  # Not included in Jython.

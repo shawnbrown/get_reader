@@ -98,6 +98,13 @@ Foxpro, etc.), use the following:
 pip install get_reader[excel,dbf]
 ```
 
+**Python 2 Support Statement**
+
+While official support for Python 2 ends January 1, 2020, the
+`get_reader` project will continue to test against and support
+older versions of Python as long as the current testing ecosystem
+provides the ability to do so.
+
 
 Reference
 ---------

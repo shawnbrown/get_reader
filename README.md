@@ -4,15 +4,20 @@ get_reader
 ![devstatus]&#32;[![build-img]][build-url] ![pyversions] ![license]
 
 This module provides a `get_reader()` function that returns reader
-objects similar to those returned by `csv.reader()`. This function:
+objects similar to those returned by `csv.reader()`. This package:
 
 * reads data from a variety of sources (CSV, Excel, pandas, etc.)
 * provides a single interface across Python versions (including
-  Unicode-aware CSV support for Python 2).
+  seamless Unicode-aware CSV support for Python 2)
 * optionally manages file handling and reduces boilerplate code
+* has no hard dependencies
+* tested on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython
+* is freely available under the Apache License, version 2
+* can serve as a light-weight requirement for other projects or can
+  be easily vendored directly into a codebase
 
-Open a UTF-8 encoded CSV (also works on old Python 2 versions without
-modification):
+
+**Open a UTF-8 encoded CSV:**
 
 ```python
 from get_reader import get_reader
@@ -23,7 +28,13 @@ for row in reader:
     print(', '.join(row))
 ```
 
-Open a Latin-1 (ISO-8859-1) encoded CSV file:
+In the above example, file handling is managed automatically by the
+reader object. The file is automatically closed when the iterator is
+exhausted or when the object is deleted. It also works on Python 2
+versions without changes.
+
+
+**Open a Latin-1 (ISO-8859-1) encoded CSV file:**
 
 ```python
 ...
@@ -34,7 +45,8 @@ for row in reader:
     print(', '.join(row))
 ```
 
-Use the reader as a context manager:
+
+**Use the reader as a context manager:**
 
 ```python
 ...
@@ -44,7 +56,8 @@ with get_reader('myfile.csv') as reader:
         print(', '.join(row))
 ```
 
-Access other data sources:
+
+**Access other data sources:**
 
 ```python
 ...
@@ -68,7 +81,8 @@ select = ...
 reader = get_reader(select({'col1': 'col2'}).sum())
 ```
 
-Call constructors directly to override auto-detect behavior:
+
+**Call constructors directly to override auto-detect behavior:**
 
 ```python
 ...

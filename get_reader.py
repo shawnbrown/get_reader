@@ -360,10 +360,15 @@ def _from_dbf(filename, encoding, **kwds):
     kwds['recfactory'] = recfactory
     table = dbfread.DBF(filename, encoding, **kwds)
 
-    yield table.field_names  # <- Header row.
+    reader = chain([table.field_names], iter(table))
 
-    for record in table:
-        yield record
+    # The dbfread module only closes the underlying file when its
+    # iterator is exhausted (see dbfread.DBF._iter_records() method).
+    def exhaust_iterator():
+        for _ in reader:  # Closes over `reader`.
+            pass
+
+    return reader, exhaust_iterator
 
 
 def _from_sql(connection, table_or_query):
@@ -555,7 +560,8 @@ class GetReaderType(object):
             This constructor requires the optional, third-party
             library dbfread.
         """
-        return Reader(_from_dbf(filename, encoding=encoding, **kwds))
+        reader, exhaust_iter = _from_dbf(filename, encoding=encoding, **kwds)
+        return Reader(reader, closefunc=exhaust_iter)
 
 
 get_reader = GetReaderType()

@@ -287,6 +287,49 @@ reader = get_reader('myfile.dbf')
 > using the values from the underlying object.
 
 
+*class* **Reader**(*iterable*, *closefunc=\<no value\>*)
+
+An iterator which will produce rows from the given *iterable*.
+By convention the first row is expected to be a header. The given
+*iterable* can be any `ReaderLike` object. The optional *closefunc*
+will be called to close any associated resources (files, database
+cursors, etc.) when:
+
+* the iterable is exhausted
+* the Reader is deleted
+* exiting a `with` statement (if used as a context manager)
+
+
+> **close**()
+>
+> Closes any associated resources (calls *closefunc* early).
+> If the resources have already been closed, this method passes
+> without error.
+
+
+*class* **ReaderLike**()
+
+An abstract class that can be used for type checking. Objects
+will test as `ReaderLike` if they are instances of `Reader` or
+`csv.reader()` or if they are non-exhaustible iterables that
+produce non-string sequences:
+
+```python
+>>> isinstance(csv.reader(csvfile), ReaderLike)
+True
+
+>>> isinstance(get_reader(csvfile), ReaderLike)
+True
+
+>>> list_of_lists = [['col1', 'col2'], ['a', 'b']]
+>>> isinstance(list_of_lists, ReaderLike)
+True
+
+>>> list_of_strings = ['col1,col2', 'a,b']
+>>> isinstance(list_of_strings, ReaderLike)
+False
+```
+
 ------------------------------------
 
 Freely licensed under the Apache License, Version 2.0

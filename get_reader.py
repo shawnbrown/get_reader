@@ -441,26 +441,42 @@ def _from_sql(connection, table_or_query):
 # Get Reader.
 #######################################################################
 class GetReaderType(object):
-    r"""Return a reader object which will iterate over records in the
-    given data---like :py:func:`csv.reader`.
+    r"""Return a `Reader` object which will iterate over records in
+    the given *obj*---like a `csv.reader()`.
 
-    The *obj* type is used to automatically determine the appropriate
-    handler. If *obj* is a string, it is treated as a file path whose
-    extension determines its content type. Any *\*args* and *\*\*kwds*
-    are passed to the underlying handler::
+    The given *obj* is checked against supported types and passed to
+    the appropriate constructor if a match is found. If *obj* is a
+    string, it is treated as a file path whose extension determines
+    its content type. Any \**args* and \*\**kwds* are passed along to
+    the matching constructor::
+
+        from get_reader import get_reader
+        ...
 
         # CSV file.
         reader = get_reader('myfile.csv')
 
+        # Database connection.
+        connection = ...
+        reader = get_reader(connection, 'SELECT col1, col2 FROM mytable;')
+
+        # Pandas DataFrame.
+        df = pd.DataFrame([...])
+        reader = get_reader(df)
+
         # Excel file.
         reader = get_reader('myfile.xlsx', worksheet='Sheet2')
 
-        # Pandas DataFrame.
-        df = pandas.DataFrame([...])
-        reader = get_reader(df)
+        # DBF file.
+        reader = get_reader('myfile.dbf')
 
-    If the *obj* type cannot be determined automatically, you can
-    call one of the "`from_...()`" constructor methods listed below.
+    When *obj* is a path, the `Reader` contains a file object that
+    is handled internally. When given a file-like *obj* (rather than
+    a path), users are responsible for properly closing this file
+    themselves.
+
+    If the *obj* type cannot be determined automatically, users can
+    call the "`from_...()`" constructor methods directly.
     """
     def __call__(self, obj, *args, **kwds):
         if isinstance(obj, string_types):

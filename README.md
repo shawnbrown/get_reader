@@ -125,29 +125,14 @@ Reference
 
 **get\_reader**(*obj*, \**args*, \*\**kwds*)
 
-Return a Reader object which will iterate over records in the
-given *obj*—like a `csv.reader()`.
+Return a `Reader` object which will iterate over records in
+the given *obj*---like a `csv.reader()`.
 
-The given *obj* is used to automatically determine the appropriate
-data handler. If *obj* is a string, it is treated as a file path
-whose extension determines its content type. Any \**args* and
-\*\**kwds* are passed to the appropriate constructor method. If the
-*obj* type cannot be determined automatically, you can call one of
-the "`from_x()`" constructor methods directly.
-
-When *obj* is a path, the Reader contains a file object that is
-handled internally. Users can close the file by calling the Reader's
-`close()` method. Otherwise this underlying file will be automatically
-closed when:
-
-* its iterator is exhausted
-* the Reader is deleted
-* exiting a `with` statement (if used as a context manager)
-
-When given a file-like *obj* (rather than a path), users are
-responsible for properly closing this file themselves.
-
-Using auto-detection:
+The given *obj* is checked against supported types and passed to
+the appropriate constructor if a match is found. If *obj* is a
+string, it is treated as a file path whose extension determines
+its content type. Any \**args* and \*\**kwds* are passed along to
+the matching constructor:
 
 ```python
 from get_reader import get_reader
@@ -170,6 +155,14 @@ reader = get_reader('myfile.xlsx', worksheet='Sheet2')
 # DBF file.
 reader = get_reader('myfile.dbf')
 ```
+
+When *obj* is a path, the `Reader` contains a file object that
+is handled internally. When given a file-like *obj* (rather than
+a path), users are responsible for properly closing this file
+themselves.
+
+If the *obj* type cannot be determined automatically, users can
+call the "`from_...()`" constructor methods directly.
 
 
 > **from\_csv**(*csvfile*, *encoding*='utf-8', dialect='excel', \*\**kwds*)

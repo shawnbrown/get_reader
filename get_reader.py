@@ -442,16 +442,32 @@ def _from_sql(connection, table_or_query):
 #######################################################################
 class GetReaderType(object):
     r"""Return a `Reader` object which will iterate over records in
-    the given *obj*---like a `csv.reader()`.
+    the given *obj*---like a `csv.reader()`. The given *obj* may be
+    one of the following:
 
-    The given *obj* is checked against supported types and passed to
-    the appropriate constructor if a match is found. If *obj* is a
-    string, it is treated as a file path whose extension determines
-    its content type. Any \**args* and \*\**kwds* are passed along to
-    the matching constructor::
+    * CSV file (string path or file object)
+    * iterable of dictionary rows
+    * database connection (should be DBAPI2 compatible)
+    * pandas DataFrame, Series, Index, or MultiIndex
+    * squint Select, Query, or Result
+
+    If optional extras are installed, *obj* may also be:
+
+    * MS Excel file path
+    * DBF file path
+
+    When *obj* is a file path, the `Reader` contains a file object
+    that is handled internally. When given a file-like *obj* (rather
+    than a path), users are responsible for properly closing this
+    file themselves.
+
+    The given *obj* is checked against supported types and
+    automatically passed to the appropriate constructor if a match is
+    found. If *obj* is a string, it is treated as a file path whose
+    extension determines its content type. Any \**args* and \*\**kwds*
+    are passed along to the matching constructor::
 
         from get_reader import get_reader
-        ...
 
         # CSV file.
         reader = get_reader('myfile.csv')
@@ -467,16 +483,8 @@ class GetReaderType(object):
         # Excel file.
         reader = get_reader('myfile.xlsx', worksheet='Sheet2')
 
-        # DBF file.
-        reader = get_reader('myfile.dbf')
-
-    When *obj* is a path, the `Reader` contains a file object that
-    is handled internally. When given a file-like *obj* (rather than
-    a path), users are responsible for properly closing this file
-    themselves.
-
     If the *obj* type cannot be determined automatically, users can
-    call the "`from_...()`" constructor methods directly.
+    call the constructor methods directly.
     """
     def __call__(self, obj, *args, **kwds):
         if isinstance(obj, string_types):

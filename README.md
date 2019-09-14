@@ -325,6 +325,10 @@ True
 >>> list_of_strings = ['col1,col2', 'a,b']
 >>> isinstance(list_of_strings, ReaderLike)
 False
+
+>>> list_of_sets = [{'col1', 'col2'}, {'a', 'b'}]
+>>> isinstance(list_of_sets, ReaderLike)
+False
 ```
 
 ------------------------------------

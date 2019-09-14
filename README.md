@@ -37,8 +37,6 @@ versions without changes.
 **Open a Latin-1 (ISO-8859-1) encoded CSV file:**
 
 ```python
-...
-
 reader = get_reader('myfile.csv', encoding='latin-1')
 
 for row in reader:
@@ -49,8 +47,6 @@ for row in reader:
 **Use the reader as a context manager:**
 
 ```python
-...
-
 with get_reader('myfile.csv') as reader:
     for row in reader:
         print(', '.join(row))
@@ -60,8 +56,6 @@ with get_reader('myfile.csv') as reader:
 **Access other data sources:**
 
 ```python
-...
-
 # From a pandas DataFrame, Series, Index, or MultiIndex.
 df = pd.DataFrame([...])
 reader = get_reader(df)  # requires pandas
@@ -85,8 +79,6 @@ reader = get_reader(select({'col1': 'col2'}).sum())
 **Call constructors directly to override auto-detect behavior:**
 
 ```python
-...
-
 # Specify tab-delimited data from a text file.
 reader = get_reader.from_csv('myfile.dat', delimiter='\t')
 ```

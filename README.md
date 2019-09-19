@@ -1,4 +1,4 @@
-get_reader
+get-reader
 ==========
 
 ![devstatus]&#32;[![build-img]][build-url] ![pyversions] ![license]
@@ -11,7 +11,7 @@ objects similar to those returned by `csv.reader()`. This package:
   seamless Unicode-aware CSV support for Python 2)
 * optionally manages file handling and reduces boilerplate code
 * has no hard dependencies
-* tested on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython
+* runs on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython
 * is freely available under the Apache License, version 2
 * can serve as a light-weight requirement for other projects or can
   be easily vendored directly into a codebase
@@ -30,8 +30,8 @@ for row in reader:
 
 In the above example, file handling is managed automatically by the
 reader object. The file is automatically closed when the iterator is
-exhausted or when the object is deleted. It also works on Python 2
-versions without changes.
+exhausted or when the object is deleted. It also handles Unicode in
+Python 2 without changes.
 
 
 **Open a Latin-1 (ISO-8859-1) encoded CSV file:**
@@ -162,6 +162,12 @@ If the *obj* type cannot be determined automatically, users can
 call the constructor methods directly.
 
 
+#### Constructor Methods
+
+While `get_reader()` can automatically detect many types of data
+sources, sometimes it's appropriate to call a constructor directly.
+
+
 **get\_reader.from\_csv**(*csvfile*, *encoding*='utf-8', dialect='excel', \*\**kwds*)
 
 Return a reader object which will iterate over lines in the
@@ -198,7 +204,7 @@ from get_reader import get_reader
 
 dictrows = [
     {'A': 1, 'B': 'x'},
-     {'A': 2, 'B': 'y'},
+    {'A': 2, 'B': 'y'},
 ]
 
 reader = get_reader.from_dicts(dictrows)

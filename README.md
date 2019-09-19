@@ -164,7 +164,7 @@ call the constructor methods directly.
 
 #### Constructor Methods
 
-**get\_reader.from\_csv**(*csvfile*, *encoding*='utf-8', dialect='excel', \*\**kwds*)
+**get\_reader.from\_csv**(*csvfile*, *encoding*='utf-8', *dialect*='excel', \*\**kwds*)
 
 Return a reader object which will iterate over lines in the
 given *csvfile*. The *csvfile* can be a string (treated as a

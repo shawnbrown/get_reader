@@ -164,10 +164,6 @@ call the constructor methods directly.
 
 #### Constructor Methods
 
-While `get_reader()` can automatically detect many types of data
-sources, sometimes it's appropriate to call a constructor directly.
-
-
 **get\_reader.from\_csv**(*csvfile*, *encoding*='utf-8', dialect='excel', \*\**kwds*)
 
 Return a reader object which will iterate over lines in the

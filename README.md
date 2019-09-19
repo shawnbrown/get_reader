@@ -267,11 +267,25 @@ reader = get_reader.from_excel('mydata.xlsx', 'Sheet 2')
 Return a reader object which will iterate over records in
 a pandas `DataFrame`, `Series`, `Index` or `MultiIndex`.
 
+```python
+import pandas as pd
+from get_reader import get_reader
+
+df = pd.DataFrame(...)
+reader = get_reader.from_pandas(df)
+```
+
 
 **get\_reader.from\_dbf**(*filename*, *encoding*=None, \*\**kwds*)
 
 Return a reader object which will iterate over lines in the given
 DBF file (from dBase, FoxPro, etc.).
+
+```python
+from get_reader import get_reader
+
+reader = get_reader.from_dbf('myfile.dbf')
+```
 
 
 **get\_reader.from\_squint**(*obj*, *fieldnames*=None)
@@ -280,6 +294,14 @@ Return a reader object which will iterate over the records returned
 from a squint `Select`, `Query`, or `Result`. If the *fieldnames*
 argument is not provided, this function tries to construct names
 using the values from the underlying object.
+
+```python
+import squint
+from get_reader import get_reader
+
+select = squint.Select(...)
+reader = get_reader.from_squint(select)
+```
 
 
 ### *class* Reader(*iterable*, *closefunc=\<no value\>*)
@@ -318,6 +340,7 @@ will test as `ReaderLike` if they are instances of `Reader` or
 produce non-string sequences:
 
 ```python
+>>> from get_reader import ReaderLike
 >>> isinstance(csv.reader(csvfile), ReaderLike)
 True
 

@@ -18,9 +18,9 @@ except ImportError:
     sqlite3 = None
 
 try:
-    import datatest
+    import squint
 except ImportError:
-    datatest = None
+    squint = None
 
 try:
     import dbfread

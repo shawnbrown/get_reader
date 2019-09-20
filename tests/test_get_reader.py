@@ -4,11 +4,11 @@ import os
 from .common import (
     unittest,
     sqlite3,
-    datatest,
     dbfread,
     pandas,
     xlrd,
     PY2,
+    squint,
     unicode_ash,
     unicode_alpha,
 )
@@ -149,21 +149,21 @@ class TestFunctionDispatching(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @unittest.skipIf(not datatest, 'datatest not found')
-    def test_datatest(self):
-        select = datatest.Select([['A', 'B'], ['x', 1], ['y', 2]])
+    @unittest.skipIf(not squint, 'squint not found')
+    def test_squint(self):
+        select = squint.Select([['A', 'B'], ['x', 1], ['y', 2]])
 
         query = select(('A', 'B'))
-        reader = get_reader(query)  # <- datatest.Query
+        reader = get_reader(query)  # <- squint.Query
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
         self.assertIsInstance(reader, Reader)
 
-        reader = get_reader(select)  # <- datatest.Select
+        reader = get_reader(select)  # <- squint.Select
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
         self.assertIsInstance(reader, Reader)
 
         result = select({'A': 'B'}).execute()
-        reader = get_reader(query)  # <- datatest.Result
+        reader = get_reader(query)  # <- squint.Result
         self.assertEqual(list(reader), [('A', 'B'), ('x', 1), ('y', 2)])
         self.assertIsInstance(reader, Reader)
 

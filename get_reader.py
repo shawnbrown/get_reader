@@ -311,17 +311,17 @@ def _from_pandas(obj, index=True):
         yield list(record)
 
 
-def _from_datatest(obj, fieldnames=None):
+def _from_squint(obj, fieldnames=None):
     """Takes a Select, Query, or Result and returns a generator."""
-    datatest = sys.modules['datatest']
-    if isinstance(obj, datatest.Query):
+    squint = sys.modules['squint']
+    if isinstance(obj, squint.Query):
         query = obj
-    elif isinstance(obj, datatest.Select):
+    elif isinstance(obj, squint.Select):
         query = obj(tuple(obj.fieldnames))
-    elif isinstance(obj, datatest.Result):
-        query = datatest.Query.from_object(obj)
+    elif isinstance(obj, squint.Result):
+        query = squint.Query.from_object(obj)
     else:
-        raise TypeError('must be datatest Select, Query, or Result')
+        raise TypeError('must be squint Select, Query, or Result')
 
     iterable = query.flatten().execute()
     if not nonstringiter(iterable):
@@ -507,12 +507,12 @@ class GetReaderType(object):
             if all(hasattr(obj, x) for x in ('cursor', 'commit', 'close')):
                 return self.from_sql(obj, *args, **kwds)
 
-            datatest = sys.modules.get('datatest')
-            if datatest:
-                if isinstance(obj, (datatest.Query,
-                                    datatest.Select,
-                                    datatest.Result)):
-                    return self.from_datatest(obj, *args, **kwds)
+            squint = sys.modules.get('squint')
+            if squint:
+                if isinstance(obj, (squint.Query,
+                                    squint.Select,
+                                    squint.Result)):
+                    return self.from_squint(obj, *args, **kwds)
 
             pandas = sys.modules.get('pandas')
             if pandas:
@@ -573,18 +573,18 @@ class GetReaderType(object):
         """
         return Reader(_from_pandas(obj, index=index))
 
-    def from_datatest(self, obj, fieldnames=None):
+    def from_squint(self, obj, fieldnames=None):
         """Return a reader object which will iterate over the records
-        returned from a datatest Select, Query, or Result. If the
+        returned from a squint Select, Query, or Result. If the
         *fieldnames* argument is not provided, this function tries to
         construct names using the values from the underlying object.
 
         .. note::
 
             This constructor requires the optional, third-party
-            library datatest.
+            library squint.
         """
-        return Reader(_from_datatest(obj, fieldnames=fieldnames))
+        return Reader(_from_squint(obj, fieldnames=fieldnames))
 
     def from_excel(self, path, worksheet=0):
         """Return a reader object which will iterate over lines in the

@@ -5,9 +5,9 @@
 #     pip install -r requirements-dev.txt
 #
 
-datatest
 dbfread
 pandas
+squint
 tox
 twine
 unittest2;python_version<"2.7"

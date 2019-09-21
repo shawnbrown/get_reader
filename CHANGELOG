@@ -15,9 +15,9 @@ COMING SOON (0.0.2)
 * Change `from_datatest()` to `from_squint()` to reflect new package name.
 * Add Python 2 support statement to README:
 
-  > The get-reader project will continue test against and support 2.6 and
-  > 2.7 as long as the current testing ecosystem provides the ability to
-  > do so with a reasonable amount effort.
+  > While official support for Python 2 ends January 1, 2020, this project
+  > will continue to test against and support older versions of Python as
+  > long as the current testing ecosystem provides the ability to do so.
 
 
 2019-08-11 (0.0.1)

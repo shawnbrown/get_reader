@@ -2,11 +2,11 @@
 from __future__ import absolute_import
 import csv
 import io
+import os
 from .common import (
     unittest,
     PY2,
     FileNotFoundError,
-    using_relative_directory,
     unicode_ash,
     unicode_eth,
     unicode_thorn,
@@ -159,7 +159,13 @@ class TestFromCsvIterable(unittest.TestCase):
 
 
 class TestFromCsvPath(unittest.TestCase):
-    @using_relative_directory
+    _original_dir = os.path.abspath(os.getcwd())
+    _relative_dir = os.path.abspath(os.path.dirname(__file__))
+
+    def setUp(self):
+        self.addCleanup(lambda: os.chdir(self._original_dir))
+        os.chdir(self._relative_dir)
+
     def test_utf8(self):
         reader, _ = _from_csv_path('sample_text_utf8.csv', encoding='utf-8', dialect='excel')
         expected = [
@@ -168,7 +174,6 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @using_relative_directory
     def test_utf16(self):
         reader, _ = _from_csv_path('sample_text_utf16.csv', encoding='utf-16', dialect='excel')
         expected = [
@@ -177,7 +182,6 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @using_relative_directory
     def test_iso88591(self):
         reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1', dialect='excel')
 
@@ -187,7 +191,6 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
-    @using_relative_directory
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
             reader, _ = _from_csv_path('sample_text_utf16.csv', encoding='utf-8', dialect='excel')

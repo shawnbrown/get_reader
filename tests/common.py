@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import functools
-import os
 import sys
 
 if sys.version_info[:2] > (2, 6):
@@ -55,29 +53,6 @@ try:
     unichr  # unichr() only defined in Python 2
 except NameError:
     unichr = chr  # chr() is Unicode-aware in Python 3
-
-
-############################
-# Helper function for tests.
-############################
-
-def using_relative_directory(func):
-    """Decorator to set the working directory to the same directory
-    where __file__ is located before calling *func* and then reverting
-    back to the original directory afterward.
-    """
-    original_dir = os.path.abspath(os.getcwd())
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwds):
-        try:
-            os.chdir(os.path.abspath(os.path.dirname(__file__)))
-            result = func(*args, **kwds)
-        finally:
-            os.chdir(original_dir)  # Revert to original directory.
-        return result
-
-    return wrapper
 
 
 ####################################

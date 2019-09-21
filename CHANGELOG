@@ -8,3 +8,34 @@ Get-Reader Changelog
 
 * First public release of packaged module.
 
+
+2019-08-04 (0.0.1.dev4)
+-----------------------
+
+* Add `ReaderLike` class to help make type-checking more convenient.
+* Remove support for Python 3.1.
+
+
+2018-07-09 (0.0.1.dev3)
+-----------------------
+
+* Add `from_datatest()` constructor method to read datatest `Select` and
+  `Query` objects.
+
+
+2018-01-28 (0.0.1.dev2)
+-----------------------
+
+* Add `from_dicts()` constructor method to read iterables of
+  dictionary rows.
+* Add `from_dbf()` to read DBF files (dBase, FoxPro, etc.).
+
+
+2018-01-18 (0.0.1.dev1)
+-----------------------
+
+* Add `get_reader()` to auto-detect objects and use appropriate constructor.
+* Add `from_csv()` to support Unicode-aware CSV handling in Python 2 and
+  Python 3.
+* Add `from_pandas()` constructor method to read pandas `DataFrame` objects.
+* Add `from_excel()` to read MS Excel files.

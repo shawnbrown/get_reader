@@ -167,7 +167,10 @@ class TestFromCsvPath(unittest.TestCase):
         os.chdir(self._relative_dir)
 
     def test_utf8(self):
-        reader, _ = _from_csv_path('sample_text_utf8.csv', encoding='utf-8', dialect='excel')
+        reader, closefunc = _from_csv_path(
+            'sample_text_utf8.csv', encoding='utf-8', dialect='excel')
+        self.addCleanup(closefunc)
+
         expected = [
             ['col1', 'col2'],
             ['utf8', unicode_alpha],
@@ -175,7 +178,10 @@ class TestFromCsvPath(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     def test_utf16(self):
-        reader, _ = _from_csv_path('sample_text_utf16.csv', encoding='utf-16', dialect='excel')
+        reader, closefunc = _from_csv_path(
+            'sample_text_utf16.csv', encoding='utf-16', dialect='excel')
+        self.addCleanup(closefunc)
+
         expected = [
             ['col1', 'col2'],
             ['utf16', 'abc'],
@@ -183,7 +189,9 @@ class TestFromCsvPath(unittest.TestCase):
         self.assertEqual(list(reader), expected)
 
     def test_iso88591(self):
-        reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='iso8859-1', dialect='excel')
+        reader, closefunc = _from_csv_path(
+            'sample_text_iso88591.csv', encoding='iso8859-1', dialect='excel')
+        self.addCleanup(closefunc)
 
         expected = [
             ['col1', 'col2'],
@@ -193,11 +201,16 @@ class TestFromCsvPath(unittest.TestCase):
 
     def test_wrong_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
-            reader, _ = _from_csv_path('sample_text_utf16.csv', encoding='utf-8', dialect='excel')
+            reader, closefunc = _from_csv_path(
+                'sample_text_utf16.csv', encoding='utf-8', dialect='excel')
+            self.addCleanup(closefunc)
+
             list(reader)  # Trigger evaluation.
 
         with self.assertRaises(UnicodeDecodeError):
-            reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='ascii', dialect='excel')
+            reader, closefunc = _from_csv_path(
+                'sample_text_iso88591.csv', encoding='ascii', dialect='excel')
+            self.addCleanup(closefunc)
             list(reader)  # Trigger evaluation.
 
         if PY2:
@@ -205,9 +218,12 @@ class TestFromCsvPath(unittest.TestCase):
 
         # Following ISO-8859-1 (mis-identified as UTF-8) doesn't fail on Py 2.x.
         with self.assertRaises(UnicodeDecodeError):
-            reader, _ = _from_csv_path('sample_text_iso88591.csv', encoding='utf-8', dialect='excel')
+            reader, closefunc = _from_csv_path(
+                'sample_text_iso88591.csv', encoding='utf-8', dialect='excel')
+            self.addCleanup(closefunc)
             list(reader)  # Trigger evaluation.
 
     def test_file_not_found(self):
         with self.assertRaises(FileNotFoundError):
-            reader, _ = _from_csv_path('missing_file.csv', encoding='iso8859-1', dialect='excel')
+            reader, _ = _from_csv_path(
+                'missing_file.csv', encoding='iso8859-1', dialect='excel')

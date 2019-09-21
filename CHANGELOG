@@ -2,6 +2,23 @@
 Get-Reader Changelog
 ====================
 
+COMING SOON (0.0.2)
+-------------------
+
+* Add `from_sql()` constructor to read database tables or SQL results.
+* Change `from_pandas()` to support `Series`, `Index`, and `MultiIndex`
+  objects.
+* Add automatic resource-handling to `Reader` class to close resources
+  (files, database cursors, etc.) when the iterator is exhausted,
+  when exiting a `with` statement, or when the object is deleted.
+* Fix file-closing behavior when DBF files are not fully consumed.
+* Change `from_datatest()` to `from_squint()` to reflect new package name.
+* Add Python 2 support statement to README:
+
+  > The get-reader project will continue test against and support 2.6 and
+  > 2.7 as long as the current testing ecosystem provides the ability to
+  > do so with a reasonable amount effort.
+
 
 2019-08-11 (0.0.1)
 ------------------

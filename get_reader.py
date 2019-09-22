@@ -23,7 +23,7 @@ except AttributeError:
     range = xrange
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3.dev0'
 
 
 __all__ = [

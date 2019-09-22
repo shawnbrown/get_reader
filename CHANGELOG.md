@@ -25,25 +25,15 @@ Get-Reader Changelog
 ------------------
 
 * First public release of packaged module.
-
-
-2019-08-04 (0.0.1.dev4)
------------------------
-
 * Added `ReaderLike` class to help make type-checking more convenient.
 * Removed support for Python 3.1.
 
 
-2018-07-09 (0.0.1.dev3)
+2018-02-20 (0.0.1.dev2)
 -----------------------
 
 * Added `from_datatest()` constructor method to read datatest `Select` and
   `Query` objects.
-
-
-2018-01-28 (0.0.1.dev2)
------------------------
-
 * Added `from_dicts()` constructor method to read iterables of
   dictionary rows.
 * Added `from_dbf()` to read DBF files (dBase, FoxPro, etc.).

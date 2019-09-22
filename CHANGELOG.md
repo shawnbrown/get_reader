@@ -2,8 +2,8 @@
 Get-Reader Changelog
 ====================
 
-COMING SOON (0.0.2)
--------------------
+2019-09-22 (0.0.2)
+------------------
 
 * Added `from_sql()` constructor to read database tables or SQL results.
 * Added support for `Series`, `Index`, and `MultiIndex` objects to the

@@ -105,9 +105,10 @@ pip install get_reader[excel,dbf]
 
 **Python 2 Support Statement**
 
-While official support for Python 2 ends January 1, 2020, this project
-will continue to test against and support older versions of Python as
-long as the current testing ecosystem provides the ability to do so.
+While official support for Python 2 ends on January 1, 2020, this
+project will continue to support older versions as long as the
+existing ecosystem provides the ability to run automated tests
+on those older versions.
 
 
 ## Reference

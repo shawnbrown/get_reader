@@ -6,18 +6,19 @@ COMING SOON (0.0.2)
 -------------------
 
 * Add `from_sql()` constructor to read database tables or SQL results.
-* Change `from_pandas()` to support `Series`, `Index`, and `MultiIndex`
-  objects.
-* Add automatic resource-handling to `Reader` class to close resources
-  (files, database cursors, etc.) when the iterator is exhausted,
-  when exiting a `with` statement, or when the object is deleted.
+* Add support for `Series`, `Index`, and `MultiIndex` objects to the
+  existing `from_pandas()` constructor.
+* Add a `Reader` class to provide consistent return values and automatic
+  resource-handling (for closing files, database cursors, etc.).
+* Change all constructors to return `Reader` instances.
 * Fix file-closing behavior when DBF files are not fully consumed.
 * Change `from_datatest()` to `from_squint()` to reflect new package name.
 * Add Python 2 support statement to README:
 
-  > While official support for Python 2 ends January 1, 2020, this project
-  > will continue to test against and support older versions of Python as
-  > long as the current testing ecosystem provides the ability to do so.
+  > While official support for Python 2 ends on January 1, 2020, this
+  > project will continue to support older versions as long as the
+  > existing ecosystem provides the ability to run automated tests
+  > on those older versions.
 
 
 2019-08-11 (0.0.1)

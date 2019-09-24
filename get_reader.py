@@ -385,24 +385,19 @@ def _from_dbf(filename, encoding, **kwds):
             "This is an optional constructor that requires the "
             "third-party library 'dbfread'."
         )
+
+    kwds['recfactory'] = lambda record: [x[1] for x in record]
     if 'load' not in kwds:
         kwds['load'] = False
 
-    def recfactory(record):
-        return [x[1] for x in record]
-
-    kwds['recfactory'] = recfactory
     table = dbfread.DBF(filename, encoding, **kwds)
+    field_names = table.field_names
 
-    reader = chain([table.field_names], iter(table))
+    generator = iter(table)
+    close_generator = getattr(generator, 'close', None)
 
-    # The dbfread module only closes the underlying file when its
-    # iterator is exhausted (see dbfread.DBF._iter_records() method).
-    def exhaust_iterator():
-        for _ in reader:  # Closes over `reader`.
-            pass
-
-    return reader, exhaust_iterator
+    reader = chain([field_names], generator)
+    return reader, close_generator
 
 
 def _from_sql(connection, table_or_query):
@@ -618,8 +613,8 @@ class GetReaderType(object):
             This constructor requires the optional, third-party
             library dbfread.
         """
-        reader, exhaust_iter = _from_dbf(filename, encoding=encoding, **kwds)
-        return Reader(reader, closefunc=exhaust_iter)
+        reader, close_generator = _from_dbf(filename, encoding=encoding, **kwds)
+        return Reader(reader, closefunc=close_generator)
 
 
 get_reader = GetReaderType()

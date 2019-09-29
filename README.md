@@ -6,15 +6,18 @@ get-reader
 This module provides a `get_reader()` function that returns reader
 objects similar to those returned by `csv.reader()`. This package:
 
+* reduces common boilerplate code for handling files and reading
+  records
 * reads data from a variety of sources (CSV, Excel, pandas, etc.)
 * provides a single interface across Python versions (including
   seamless Unicode-aware CSV support for Python 2)
-* optionally manages file handling and reduces boilerplate code
-* has no hard dependencies
-* runs on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython
-* is freely available under the Apache License, version 2
-* can serve as a light-weight requirement for other projects or can
-  be easily vendored directly into a codebase
+* is easy to incorporate into your own projects:
+
+  * has no hard dependencies
+  * runs on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython
+  * is freely available under the Apache License, version 2
+  * can be easily vendored directly into your codebase if you don't
+    want to include it as a dependency
 
 
 **Open a UTF-8 encoded CSV:**
@@ -51,6 +54,9 @@ with get_reader('myfile.csv') as reader:
     for row in reader:
         print(', '.join(row))
 ```
+
+In this example, `reader` automatically closes its internal file object
+when exiting the `with` block.
 
 
 **Access other data sources:**

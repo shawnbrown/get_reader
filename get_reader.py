@@ -151,14 +151,18 @@ class ReaderLikeABCMeta(ABCMeta):
 
 class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):
     """An abstract class that can be used for type checking. Objects
-    will test as `ReaderLike` if they are instances of `Reader` or
-    `csv.reader()` or if they are non-exhaustible iterables that
-    produce non-string sequences::
+    will test as `ReaderLike` if they are one of the following:
 
-        >>> isinstance(csv.reader(csvfile), ReaderLike)
-        True
+    * instance of the `Reader` class
+    * object returned by `csv.reader()`
+    * non-exhaustible iterable that produces non-string sequences
+
+    See the following examples::
 
         >>> isinstance(get_reader(csvfile), ReaderLike)
+        True
+
+        >>> isinstance(csv.reader(csvfile), ReaderLike)
         True
 
         >>> list_of_lists = [['col1', 'col2'], ['a', 'b']]
@@ -167,6 +171,10 @@ class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):
 
         >>> list_of_strings = ['col1,col2', 'a,b']
         >>> isinstance(list_of_strings, ReaderLike)
+        False
+
+        >>> list_of_sets = [{'col1', 'col2'}, {'a', 'b'}]
+        >>> isinstance(list_of_sets, ReaderLike)
         False
     """
     def __new__(cls):

@@ -332,16 +332,20 @@ without error.
 ### *class* ReaderLike()
 
 An abstract class that can be used for type checking. Objects
-will test as `ReaderLike` if they are instances of `Reader` or
-`csv.reader()` or if they are non-exhaustible iterables that
-produce non-string sequences:
+will test as `ReaderLike` if they are one of the following:
+
+* instance of the `Reader` class
+* object returned by `csv.reader()`
+* non-exhaustible iterable that produces non-string sequences
+
+See the following examples:
+
 
 ```python
->>> from get_reader import ReaderLike
->>> isinstance(csv.reader(csvfile), ReaderLike)
+>>> isinstance(get_reader(csvfile), ReaderLike)
 True
 
->>> isinstance(get_reader(csvfile), ReaderLike)
+>>> isinstance(csv.reader(csvfile), ReaderLike)
 True
 
 >>> list_of_lists = [['col1', 'col2'], ['a', 'b']]

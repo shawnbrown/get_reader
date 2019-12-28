@@ -197,6 +197,17 @@ class TestFromCsvPath(unittest.TestCase):
         ]
         self.assertEqual(list(reader), expected)
 
+    def test_utf8_with_bom(self):
+        reader, closefunc = _from_csv_path(
+            'sample_text_utf8_bom.csv', encoding='utf-8-sig', dialect='excel')
+        self.addCleanup(closefunc)
+
+        expected = [
+            ['col1', 'col2'],
+            ['utf8', unicode_alpha],
+        ]
+        self.assertEqual(list(reader), expected)
+
     def test_utf16(self):
         reader, closefunc = _from_csv_path(
             'sample_text_utf16.csv', encoding='utf-16', dialect='excel')

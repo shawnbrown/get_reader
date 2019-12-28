@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import csv
 import io
 import os
+import platform
 from .common import (
     unittest,
     PY2,
@@ -33,10 +34,17 @@ class TestNormalizeDecoder(unittest.TestCase):
         self.assertEqual(_normalize_decoder('utf-8-sig'), 'utf-8-sig')
         self.assertEqual(_normalize_decoder('latin-1'), 'latin-1')
 
-    def test_invalid_input(self):
-        with self.assertRaises(TypeError):
+    def test_none_value(self):
+        if platform.python_implementation() == 'Jython':
+            import java
+            expected_error = java.lang.NullPointerException
+        else:
+            expected_error = TypeError
+
+        with self.assertRaises(expected_error):
             self.assertEqual(_normalize_decoder(None), None)
 
+    def test_nonstring_value(self):
         with self.assertRaises(TypeError):
             self.assertEqual(_normalize_decoder(123), 123)
 

@@ -84,24 +84,24 @@ class TestFromSquint(unittest.TestCase):
         self.assertEqual(list(reader), [('foo', 'bar'), ('x', 1), ('y', 2)])
 
     def test_result_list(self):
-        result = squint.Result([['x', 1], ['y', 2]], evaluation_type=list)
+        result = squint.Result([['x', 1], ['y', 2]], evaltype=list)
         reader = _from_squint(result)  # <- No fieldnames specified.
         self.assertEqual(list(reader), [['x', 1], ['y', 2]])
 
-        result = squint.Result([['x', 1], ['y', 2]], evaluation_type=list)
+        result = squint.Result([['x', 1], ['y', 2]], evaltype=list)
         reader = _from_squint(result, fieldnames=['foo', 'bar'])
         self.assertEqual(list(reader), [['foo', 'bar'], ['x', 1], ['y', 2]])
 
     def test_result_dict(self):
         source_dict = {'x': [1, 1], 'y': [2]}
 
-        result = squint.Result(source_dict, evaluation_type=dict)
+        result = squint.Result(source_dict, evaltype=dict)
         reader = _from_squint(result)  # <- No fieldnames specified.
         reader_list = list(reader)
         self.assertEqual(reader_list.count(('x', 1)), 2)
         self.assertEqual(reader_list.count(('y', 2)), 1)
 
-        result = squint.Result(source_dict, evaluation_type=dict)
+        result = squint.Result(source_dict, evaltype=dict)
         reader = _from_squint(result, fieldnames=('foo', 'bar'))
         reader_list = list(reader)
         self.assertEqual(reader_list[0], ('foo', 'bar'))

@@ -56,7 +56,8 @@ with get_reader('myfile.csv') as reader:
 ```
 
 In this example, `reader` automatically closes its internal file object
-when exiting the `with` block.
+when exiting the `with` block even if the for-loop doesn't finish
+exhausting the `reader`.
 
 
 **Access other data sources:**

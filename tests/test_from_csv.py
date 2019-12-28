@@ -16,9 +16,29 @@ from .common import (
 )
 
 from get_reader import (
+    _normalize_decoder,
     _from_csv_path,
     _from_csv_iterable,
 )
+
+
+class TestNormalizeDecoder(unittest.TestCase):
+    def test_utf8_no_bom(self):
+        """UTF-8 should be changed to Python's BOM-aware encoding."""
+        self.assertEqual(_normalize_decoder('utf-8'), 'utf_8_sig')
+        self.assertEqual(_normalize_decoder('UTF8'), 'utf_8_sig')
+
+    def test_other_encodings(self):
+        """All other encoding values should be returned as-is"""
+        self.assertEqual(_normalize_decoder('utf-8-sig'), 'utf-8-sig')
+        self.assertEqual(_normalize_decoder('latin-1'), 'latin-1')
+
+    def test_invalid_input(self):
+        with self.assertRaises(TypeError):
+            self.assertEqual(_normalize_decoder(None), None)
+
+        with self.assertRaises(TypeError):
+            self.assertEqual(_normalize_decoder(123), 123)
 
 
 class TestFromCsvIterable(unittest.TestCase):

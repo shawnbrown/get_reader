@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import codecs
 import csv
 import io
 import sys
@@ -187,10 +188,19 @@ class ReaderLike(ReaderLikeABCMeta('ReaderLikeABC', (object,), {})):
 # Data handling functions.
 #######################################################################
 
+_utf8_no_bom = codecs.getdecoder('utf-8')
+
+def _normalize_decoder(encoding):
+    """Changes UTF-8 into Python's BOM-aware utf_8_sig encoding
+    or returns encoding unchanged. If encoding is invalid, an error
+    will be raised.
+    """
+    if codecs.getdecoder(encoding) is _utf8_no_bom:
+        return 'utf_8_sig'  # <- EXIT! Return BOM-aware UTF-8 encoding.
+    return encoding
+
+
 if PY2:
-
-    import codecs
-
 
     def _unicode_rows(stream, encoding, dialect, **kwds):
         """Returns a generator that yields rows as lists of Unicode

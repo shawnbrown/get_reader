@@ -48,7 +48,7 @@ setuptools.setup(
     python_requires='>=2.6.*, !=3.0.*, !=3.1.*',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',

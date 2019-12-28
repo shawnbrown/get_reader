@@ -2,6 +2,14 @@
 Get-Reader Changelog
 ====================
 
+2019-12-28 (1.0.0)
+------------------
+
+* First stable release, version 1.0 production API.
+* Added byte order mark (BOM) handling for UTF-8 encoded files.
+* Improved file handling when reading DBF files.
+
+
 2019-09-22 (0.0.2)
 ------------------
 

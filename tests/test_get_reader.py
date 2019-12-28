@@ -35,6 +35,14 @@ class TestFunctionDispatching(unittest.TestCase):
         self.assertEqual(list(reader), expected)
         self.assertIsInstance(reader, Reader)
 
+        reader = get_reader('sample_text_utf8_bom.csv', encoding='utf-8')
+        expected = [
+            ['col1', 'col2'],
+            ['utf8', unicode_alpha],
+        ]
+        self.assertEqual(list(reader), expected)
+        self.assertIsInstance(reader, Reader)
+
         reader = get_reader('sample_text_iso88591.csv', encoding='iso8859-1')
         expected = [
             ['col1', 'col2'],

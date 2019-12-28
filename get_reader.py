@@ -558,6 +558,7 @@ class GetReaderType(object):
         ``newline=''``.
         """
         if isinstance(csvfile, string_types):
+            encoding = _normalize_decoder(encoding)
             reader, close_file = _from_csv_path(csvfile, encoding, dialect=dialect, **kwds)
             return Reader(reader, closefunc=close_file)
 

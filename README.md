@@ -8,7 +8,7 @@ objects similar to those returned by `csv.reader()`. This package:
 
 * reduces common boilerplate code for handling files and reading
   records
-* reads data from a variety of sources (CSV, Excel, pandas, etc.)
+* reads data from CSV, pandas, SQL connections, MS Excel, DBF, and squint
 * provides a single interface across Python versions (including
   seamless Unicode-aware CSV support for Python 2)
 * is easy to incorporate into your own projects:

@@ -7,7 +7,7 @@
 
 dbfread
 pandas
-squint
+squint>0.0.2
 tox
 twine
 unittest2;python_version<"2.7"

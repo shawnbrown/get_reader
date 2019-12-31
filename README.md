@@ -372,7 +372,7 @@ False
 
 Freely licensed under the Apache License, Version 2.0
 
-(C) Copyright 2018 – 2019 Shawn Brown.
+(C) Copyright 2018 – 2020 Shawn Brown.
 
 
 [devstatus]: https://img.shields.io/pypi/status/get_reader.svg

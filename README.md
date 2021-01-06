@@ -14,7 +14,7 @@ objects similar to those returned by `csv.reader()`. This package:
 * is easy to incorporate into your own projects:
 
   * has no hard dependencies
-  * runs on Python 2.6, 2.7, 3.2 through 3.8, PyPy, PyPy3, and Jython
+  * runs on Python 2.6, 2.7, 3.2 through 3.10, PyPy, PyPy3, and Jython
   * is freely available under the Apache License, version 2
   * can be easily vendored directly into your codebase if you don't
     want to include it as a dependency

@@ -2,6 +2,12 @@
 Get-Reader Changelog
 ====================
 
+NEXT UPDATE (1.1.0)
+-------------------
+
+* Added support for Python 3.9 and 3.10.
+
+
 2019-12-28 (1.0.0)
 ------------------
 

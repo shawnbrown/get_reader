@@ -1,7 +1,13 @@
 get-reader
 ==========
 
-![devstatus]&#32;[![build-img]][build-url] ![pyversions] ![license]
+[![Apache 2 License](https://img.shields.io/badge/license-Apache_2-informational?logo=open-source-initiative&logoColor=white&style=flat-square)](https://opensource.org/licenses/Apache-2.0)
+[![Supported Python Versions](https://img.shields.io/badge/python-2.6_|_2.7_|_3.2_through_3.10_|_PyPy_|_PyPy3_|_Jython-informational?logo=python&logoColor=white&style=flat-square)](https://pypi.org/project/get-reader/)
+[![Dependencies](https://img.shields.io/badge/install_requires-no_dependencies-informational?logo=pypi&logoColor=white&style=flat-square)](https://pypi.org/project/get-reader/)
+<br>
+[![Travis CI Build](https://img.shields.io/travis/shawnbrown/get_reader?logo=travis-ci&logoColor=white&style=flat-square)](https://travis-ci.org/shawnbrown/get_reader)
+[![PyPI Build Status](https://img.shields.io/pypi/status/get-reader?label=PyPI%20status&logo=pypi&logoColor=white&style=flat-square)](https://pypi.org/project/get-reader/)
+
 
 This module provides a `get_reader()` function that returns reader
 objects similar to those returned by `csv.reader()`. This package:
@@ -372,11 +378,4 @@ False
 
 Freely licensed under the Apache License, Version 2.0
 
-(C) Copyright 2018 – 2020 Shawn Brown.
-
-
-[devstatus]: https://img.shields.io/pypi/status/get_reader.svg
-[build-img]: https://api.travis-ci.org/shawnbrown/get_reader.svg?branch=master
-[build-url]: https://travis-ci.org/shawnbrown/get_reader
-[pyversions]: https://img.shields.io/pypi/pyversions/get_reader.svg
-[license]: https://img.shields.io/badge/license-Apache%202-blue.svg
+(C) Copyright 2018 – 2021 Shawn Brown.
